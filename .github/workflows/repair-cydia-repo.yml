@@ -1,0 +1,144 @@
+name: Repair Cydia repository metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-cydia-repo.yml'
+      - 'debs/**'
+      - 'Packages'
+      - 'Packages.gz'
+      - 'Release'
+      - 'Packages (3)'
+      - 'Packages (3).gz'
+      - 'Release (3)'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install repository tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev xz-utils
+
+      - name: Fix package author and maintainer fields
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEB="debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb"
+          test -f "$DEB"
+
+          WORK="$(mktemp -d)"
+          trap 'rm -rf "$WORK"' EXIT
+
+          mkdir -p "$WORK/control" "$WORK/archive"
+          ar p "$DEB" control.tar.xz > "$WORK/original-control.tar.xz"
+          ar p "$DEB" data.tar.xz > "$WORK/original-data.tar.xz"
+          ar p "$DEB" control.tar.xz | tar -xJf - -C "$WORK/control"
+
+          CONTROL="$WORK/control/control"
+          test -f "$CONTROL"
+
+          for FIELD in Maintainer Author; do
+            if grep -q "^$${FIELD}:" "$CONTROL"; then
+              sed -i "s|^$${FIELD}:.*|$${FIELD}: M3gaIOS6p0w3r|" "$CONTROL"
+            else
+              printf '%s: M3gaIOS6p0w3r\n' "$FIELD" >> "$CONTROL"
+            fi
+          done
+
+          tar --sort=name --owner=0 --group=0 --numeric-owner -cJf "$WORK/archive/control.tar.xz" -C "$WORK/control" .
+          printf '2.0\n' > "$WORK/archive/debian-binary"
+          cp "$WORK/original-data.tar.xz" "$WORK/archive/data.tar.xz"
+
+          (cd "$WORK/archive" && ar cr "$GITHUB_WORKSPACE/$DEB.new" debian-binary control.tar.xz data.tar.xz)
+          mv "$DEB.new" "$DEB"
+
+          # The installed theme payload must remain byte-for-byte unchanged.
+          ar p "$DEB" data.tar.xz > "$WORK/rebuilt-data.tar.xz"
+          cmp "$WORK/original-data.tar.xz" "$WORK/rebuilt-data.tar.xz"
+
+          echo "=== Updated package control fields ==="
+          dpkg-deb -I "$DEB" control
+          dpkg-deb --field "$DEB" Maintainer
+          dpkg-deb --field "$DEB" Author
+
+      - name: Regenerate Cydia package indexes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dpkg-scanpackages --multiversion debs /dev/null | sed 's|^Filename: debs/|Filename: ./debs/|' > Packages
+          gzip -n -9c Packages > Packages.gz
+
+          grep -q '^Package: com.caldwelljaeb.ebayslider.palelemon$' Packages
+          grep -q '^Maintainer: M3gaIOS6p0w3r$' Packages
+          grep -q '^Author: M3gaIOS6p0w3r$' Packages
+          grep -q '^Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb$' Packages
+
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- "debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb" Packages Packages.gz Release 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
