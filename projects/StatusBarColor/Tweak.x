@@ -11,13 +11,20 @@
 
 - (UIColor *)textColorForStyle:(int)style {
     NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:PREFS_PATH];
-    if (![ [prefs objectForKey:@"Enabled"] boolValue ]) {
+    id enabledValue = [prefs objectForKey:@"Enabled"];
+
+    // Missing preference keys use the advertised first-run defaults.
+    if (enabledValue && ![enabledValue boolValue]) {
         return %orig;
     }
 
-    CGFloat red = [[prefs objectForKey:@"Red"] floatValue];
-    CGFloat green = [[prefs objectForKey:@"Green"] floatValue];
-    CGFloat blue = [[prefs objectForKey:@"Blue"] floatValue];
+    id redValue = [prefs objectForKey:@"Red"];
+    id greenValue = [prefs objectForKey:@"Green"];
+    id blueValue = [prefs objectForKey:@"Blue"];
+
+    CGFloat red = redValue ? [redValue floatValue] : 255.0;
+    CGFloat green = greenValue ? [greenValue floatValue] : 250.0;
+    CGFloat blue = blueValue ? [blueValue floatValue] : 168.0;
 
     red = MIN(255.0, MAX(0.0, red)) / 255.0;
     green = MIN(255.0, MAX(0.0, green)) / 255.0;
