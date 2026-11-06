@@ -1,0 +1,9 @@
+Package: com.m3gaios6p0w3r.statusbarcolor
+Name: StatusBarColor
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Choose a custom RGB color for iOS 6 status-bar text and icons, with an enable switch.
+Maintainer: M3gaIOS6p0w3r
+Author: M3gaIOS6p0w3r
+Section: Tweaks
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
