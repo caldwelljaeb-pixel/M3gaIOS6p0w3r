@@ -49,8 +49,8 @@ jobs:
           test -f "$CONTROL"
 
           for FIELD in Maintainer Author; do
-            if grep -q "^$${FIELD}:" "$CONTROL"; then
-              sed -i "s|^$${FIELD}:.*|$${FIELD}: M3gaIOS6p0w3r|" "$CONTROL"
+            if grep -q "^${FIELD}:" "$CONTROL"; then
+              sed -i "s|^${FIELD}:.*|${FIELD}: M3gaIOS6p0w3r|" "$CONTROL"
             else
               printf '%s: M3gaIOS6p0w3r\n' "$FIELD" >> "$CONTROL"
             fi
