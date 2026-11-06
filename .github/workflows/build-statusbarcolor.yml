@@ -1,0 +1,40 @@
+name: Build StatusBarColor (test only)
+
+on:
+  push:
+    paths:
+      - "projects/StatusBarColor/**"
+      - ".github/workflows/build-statusbarcolor.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang make perl git ldid dpkg-dev fakeroot
+
+      - name: Install Theos and iOS SDKs
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+          git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+
+      - name: Build test package
+        working-directory: projects/StatusBarColor
+        run: |
+          make package FINALPACKAGE=1
+          find packages -maxdepth 1 -type f -name '*.deb' -print
+
+      - name: Upload test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: StatusBarColor-test-build
+          path: projects/StatusBarColor/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
