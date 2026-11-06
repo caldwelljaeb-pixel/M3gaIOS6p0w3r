@@ -5,3 +5,11 @@ Codename: stable
 Architectures: iphoneos-arm
 Components: main
 Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+MD5Sum:
+ ba1f4d674280b4cf2208ae32c489baba      703 Packages
+ 863470b8c16790cfaea383aa284f6e67      489 Packages.gz
+
+SHA256:
+ dd27e67eee38444df0b859900854d54a39e4b52ee39bc74e59e8e66f17df31e9      703 Packages
+ 1cb4502a165b66e41069b2f85d6a5767830fce1cfd30e292f90b1fd972171807      489 Packages.gz
