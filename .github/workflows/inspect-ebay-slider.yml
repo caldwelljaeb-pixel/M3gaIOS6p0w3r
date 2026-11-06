@@ -1,0 +1,26 @@
+name: Inspect eBay Slider package
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb'
+      - '.github/workflows/inspect-ebay-slider.yml'
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect Debian package contents
+        run: |
+          set -e
+          DEB="debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb"
+          echo "=== Package archive members ==="
+          ar t "$DEB"
+          echo "=== Control metadata ==="
+          ar p "$DEB" control.tar.xz | tar -tJvf -
+          echo "=== Theme file listing ==="
+          ar p "$DEB" data.tar.xz | tar -tJvf -
+          echo "=== Extract control metadata ==="
+          mkdir -p /tmp/ebay-control
+          ar p "$DEB" control.tar.xz | tar -xJf - -C /tmp/ebay-control
+          find /tmp/ebay-control -type f -maxdepth 3 -print -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
