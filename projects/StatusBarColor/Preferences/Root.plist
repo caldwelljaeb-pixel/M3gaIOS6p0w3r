@@ -3,78 +3,47 @@
 <plist version="1.0">
 <array>
     <dict>
-        <key>cell</key>
-        <string>PSGroupCell</string>
-        <key>label</key>
-        <string>Made with ❤️ by M3gaIOS6p0w3r</string>
+        <key>cell</key><string>PSGroupCell</string>
+        <key>label</key><string>Made with ❤️ by M3gaIOS6p0w3r</string>
     </dict>
     <dict>
-        <key>cell</key>
-        <string>PSSwitchCell</string>
-        <key>default</key>
-        <true/>
-        <key>defaults</key>
-        <string>com.m3gaios6p0w3r.statusbarcolor</string>
-        <key>key</key>
-        <string>Enabled</string>
-        <key>label</key>
-        <string>Enable StatusBarColor</string>
-        <key>PostNotification</key>
-        <string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
+        <key>cell</key><string>PSSwitchCell</string>
+        <key>default</key><true/>
+        <key>defaults</key><string>com.m3gaios6p0w3r.statusbarcolor</string>
+        <key>key</key><string>Enabled</string>
+        <key>label</key><string>Enable StatusBarColor</string>
+        <key>PostNotification</key><string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
     </dict>
     <dict>
-        <key>cell</key>
-        <string>PSGroupCell</string>
-        <key>label</key>
-        <string>RGB values (0–255)</string>
+        <key>cell</key><string>PSGroupCell</string>
+        <key>label</key><string>RGB values (0–255)</string>
     </dict>
     <dict>
-        <key>cell</key>
-        <string>PSEditTextCell</string>
-        <key>default</key>
-        <integer>255</integer>
-        <key>defaults</key>
-        <string>com.m3gaios6p0w3r.statusbarcolor</string>
-        <key>key</key>
-        <string>Red</string>
-        <key>label</key>
-        <string>Red</string>
-        <key>keyboard</key>
-        <string>NumberPad</string>
-        <key>PostNotification</key>
-        <string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
+        <key>cell</key><string>PSEditTextCell</string>
+        <key>default</key><integer>255</integer>
+        <key>defaults</key><string>com.m3gaios6p0w3r.statusbarcolor</string>
+        <key>key</key><string>Red</string>
+        <key>label</key><string>Red</string>
+        <key>keyboard</key><string>NumberPad</string>
+        <key>PostNotification</key><string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
     </dict>
     <dict>
-        <key>cell</key>
-        <string>PSEditTextCell</string>
-        <key>default</key>
-        <integer>250</integer>
-        <key>defaults</key>
-        <string>com.m3gaios6p0w3p0w3r.statusbarcolor</string>
-        <key>key</key>
-        <string>Green</string>
-        <key>label</key>
-        <string>Green</string>
-        <key>keyboard</key>
-        <string>NumberPad</string>
-        <key>PostNotification</key>
-        <string>com.m3gaios6p0w3p0w3r.statusbarcolor/ReloadPrefs</string>
+        <key>cell</key><string>PSEditTextCell</string>
+        <key>default</key><integer>250</integer>
+        <key>defaults</key><string>com.m3gaios6p0w3r.statusbarcolor</string>
+        <key>key</key><string>Green</string>
+        <key>label</key><string>Green</string>
+        <key>keyboard</key><string>NumberPad</string>
+        <key>PostNotification</key><string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
     </dict>
     <dict>
-        <key>cell</key>
-        <string>PSEditTextCell</string>
-        <key>default</key>
-        <integer>168</integer>
-        <key>defaults</key>
-        <string>com.m3gaios6p0w3p0w3r.statusbarcolor</string>
-        <key>key</key>
-        <string>Blue</string>
-        <key>label</key>
-        <string>Blue</string>
-        <key>keyboard</key>
-        <string>NumberPad</string>
-        <key>PostNotification</key>
-        <string>com.m3gaios6p0w3p0w3r.statusbarcolor/ReloadPrefs</string>
+        <key>cell</key><string>PSEditTextCell</string>
+        <key>default</key><integer>168</integer>
+        <key>defaults</key><string>com.m3gaios6p0w3r.statusbarcolor</string>
+        <key>key</key><string>Blue</string>
+        <key>label</key><string>Blue</string>
+        <key>keyboard</key><string>NumberPad</string>
+        <key>PostNotification</key><string>com.m3gaios6p0w3r.statusbarcolor/ReloadPrefs</string>
     </dict>
 </array>
 </plist>
