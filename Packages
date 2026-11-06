@@ -1,0 +1,13 @@
+Package: com.caldwelljaeb.ebayslider.palelemon
+Version: 1.0
+Architecture: iphoneos-arm
+Name: eBay Slider - Pale Lemon Rainbow Shimmer
+Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel rainbow finish and custom “slide to ebay” wording. Animated shimmer companion is planned separately.
+Depends: winterboard, firmware (>= 6.0)
+Section: Themes (LockScreen)
+Maintainer: Caldwell
+Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb
+Size: 20024
+MD5sum: bb6fe1749899ffe67410cd23083258ed
+SHA256: c0325250d4a1bcd4a68075fcf02808a7ea008fc0eb8ee749dbc9647c6988855b
+
