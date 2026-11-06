@@ -1,0 +1,15 @@
+Origin: M3gaIOS6p0w3r
+Label: M3gaIOS6p0w3r
+Suite: stable
+Codename: stable
+Architectures: iphoneos-arm
+Components: main
+Description: M3gaIOS6p0w3r Cydia Repository
+
+MD5Sum:
+ ed8c6eca3bce8a082c3434ac93e3c48f 614 Packages
+ 902200bcc1088c67bf1b5de171e3972b 438 Packages.gz
+
+SHA256:
+ 785d6f04e208ad449a570cab391768f10324fe14b9fdcf9af79a08f36ca8f784 614 Packages
+ 50ad83b62f6a2f10913bda1bbd55fbfc871c853b9d5eb01e07f4c007a4ddd2c6 438 Packages.gz
