@@ -1,0 +1,30 @@
+name: Extract eBay Slider artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/extract-ebay-slider.yml'
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract original theme assets
+        run: |
+          set -e
+          DEB="debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb"
+          mkdir -p /tmp/ebay-original
+          ar p "$DEB" data.tar.xz | tar -xJf - -C /tmp/ebay-original
+          THEME="/tmp/ebay-original/Library/Themes/eBaySliderPaleLemon.theme"
+          echo "=== Original slider strings ==="
+          cat "$THEME/Folders/SpringBoard.app/en.lproj/SpringBoard.strings"
+          echo "=== Extracted image information ==="
+          file "$THEME/Bundles/com.apple.TelephonyUI/"*.png
+          cp "$THEME/Bundles/com.apple.TelephonyUI/"*.png .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ebay-slider-original-artwork
+          path: |
+            bottombarknobgray.png
+            bottombarknobgray@2x.png
+          if-no-files-found: error
