@@ -3,20 +3,24 @@
 A from-scratch SpringBoard gravity tweak for jailbroken iOS 6 devices.
 
 ## Target
-- iOS 6.1.3
 - iPhone 4S / ARMv7
-- SpringBoard
-- Theos + MobileSubstrate
+- iOS 6.1.3 (deployment target iOS 6.0)
+- SpringBoard / MobileSubstrate
+- Theos, using the iOS 9.3 SDK for 32-bit ARM compilation
 
-## V1 direction
-Tilt-controlled physics: the accelerometer supplies gravity, icon views gain velocity and position offsets, and screen edges bounce icons back into the visible area.
+## V1 behavior
+- Tilt-controlled acceleration from UIAccelerometer.
+- Damped icon movement.
+- Bounce against the bounds of each icon's parent view.
+- Basic circle-style collision response between icons sharing the same parent view.
+- Settings switch to enable/disable the effect.
+- Disabling gravity restores each tracked icon view's original transform.
 
-## Current prototype status
-The first source prototype hooks `SBIconView`, tracks icon views, reads `UIAccelerometer`, and applies damped motion with edge bounce. Sensor direction, SpringBoard class compatibility, icon layout interaction, and tap behavior must be verified on an iOS 6 device before this is considered installable.
+## Safety defaults
+Gravity is OFF by default. Enable it in Settings > M3gaGravity. Turn it off there to restore tracked icons. If SpringBoard becomes unstable, use substrate safe mode or remove the package rather than repeatedly respringing.
 
-## Planned next milestones
-1. Build and inspect the ARMv7 package.
-2. Verify icon discovery and tilt direction on-device.
-3. Add icon-to-icon collision response.
-4. Add shake-to-scatter and a safe restore/disable control.
-5. Test repeated SpringBoard relaunches before publishing.
+## Build
+The GitHub Actions workflow builds an ARMv7 Debian package using Theos and uploads the .deb as a workflow artifact.
+
+## Prototype limitations
+This is a first physics prototype, not yet device-validated. Collisions only resolve for icons sharing the same immediate superview, so collisions across pages/dock containers are not implemented. Sensor direction and motion strength need physical testing on iOS 6.1.3. Icon view class and layout interactions also need on-device verification.
