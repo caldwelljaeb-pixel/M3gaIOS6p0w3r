@@ -29,8 +29,6 @@ jobs:
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
           test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
           test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
-          # Keep ARM device architectures in top-level SDK stubs.
-          # Nested exports.archs declarations remain unchanged.
           python3 - "$THEOS/sdks/iPhoneOS9.3.sdk" <<'PY'
           import pathlib, re, sys
           sdk = pathlib.Path(sys.argv[1])
@@ -52,10 +50,6 @@ jobs:
           print(f"Adjusted top-level architecture declarations in {changed} SDK stubs")
           if changed == 0:
               raise SystemExit("No top-level SDK architecture declarations were patched")
-          # The 9.3 SDK's libSystem.tbd advertises liblaunch as a re-export,
-          # but the matching liblaunch.tbd stub is absent from this SDK tree.
-          # This tweak does not use liblaunch symbols, so omit only that
-          # build-time re-export instead of inventing a fake library stub.
           libsystem = sdk / "usr/lib/libSystem.tbd"
           libsystem_text = libsystem.read_text()
           missing = "/usr/lib/system/liblaunch.dylib, "
@@ -66,11 +60,15 @@ jobs:
           PY
           echo "THEOS=$THEOS" >> "$GITHUB_ENV"
 
-      - name: Build test package
+      - name: Build fresh test package
         working-directory: projects/DoodleJumpHack
         run: |
+          rm -rf packages
           make clean package FINALPACKAGE=1
-          find packages -maxdepth 1 -type f -name '*.deb' -print
+          test "$(find packages -maxdepth 1 -type f -name '*.deb' | wc -l)" -eq 1
+          dpkg-deb -f packages/*.deb Version Description
+          dpkg-deb -f packages/*.deb Version | grep -Fx '0.1.2'
+          dpkg-deb -f packages/*.deb Description | grep -F 'candidate power-up type 0'
 
       - name: Upload test package
         uses: actions/upload-artifact@v4
