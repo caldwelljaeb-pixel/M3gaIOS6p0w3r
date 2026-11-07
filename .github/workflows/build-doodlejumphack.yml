@@ -1,0 +1,47 @@
+name: Build Doodle Jump Hack (test only)
+
+on:
+  push:
+    paths:
+      - "projects/DoodleJumpHack/**"
+      - ".github/workflows/build-doodlejumphack.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6
+
+      - name: Install Theos, Linux toolchain, and iOS 9.3 SDK
+        env:
+          THEOS: ${{ runner.temp }}/theos
+          CI: "true"
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$THEOS"
+          git clone --depth 1 https://github.com/theos/sdks.git "$THEOS/sdks"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+
+      - name: Build test package
+        working-directory: projects/DoodleJumpHack
+        run: |
+          test -x "$THEOS/toolchain/linux/iphone/bin/clang"
+          test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
+          test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
+          make clean package FINALPACKAGE=1
+          find packages -maxdepth 1 -type f -name '*.deb' -print
+
+      - name: Upload test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoodleJumpHack-test-build
+          path: projects/DoodleJumpHack/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
