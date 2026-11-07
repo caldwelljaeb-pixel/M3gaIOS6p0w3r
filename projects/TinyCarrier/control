@@ -1,0 +1,10 @@
+Package: com.m3gaios6p0w3r.tinycarrier
+Name: TinyCarrier
+Version: 0.1.0-1
+Architecture: iphoneos-arm
+Description: Replaces the iOS 6 status-bar carrier label with the short custom text “M3ga”.
+Maintainer: M3gaIOS6p0w3r
+Author: M3gaIOS6p0w3r
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 6.0)
+Priority: optional
