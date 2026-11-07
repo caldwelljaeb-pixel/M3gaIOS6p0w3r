@@ -14,3 +14,23 @@ Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel ra
 Author: M3gaIOS6p0w3r
 Name: eBay Slider - Pale Lemon Rainbow Shimmer
 
+Package: com.m3gaios6p0w3r.statusbarcolor
+Version: 0.0.1-7
+Architecture: iphoneos-arm
+Maintainer: M3gaIOS6p0w3r
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
+Filename: ./debs/com.m3gaios6p0w3r.statusbarcolor_0.0.1-7_iphoneos-arm.deb
+Size: 6248
+MD5sum: 3116a8f0cb30886174723b7b95492712
+SHA1: 92e1d9bd11289c9b1bfcb494c1ffe0d127babb22
+SHA256: f588fd588e2dfa79207a7dcd2891ffc3c7a7cb4f3ad443d63120386a3e6ddd0e
+Section: Tweaks
+Priority: optional
+Description: Give your classic iOS 6 status bar a fresh look with customizable text and icon colors.
+ StatusBarColor adds a Settings pane with an Enable switch, Red/Green/Blue sliders, and exact numeric RGB fields (0–255) so you can fine-tune your own shade.
+ Comes ready with the signature Pale Lemon color (#FFFAA8; RGB 255, 250, 168), or create a completely custom color to match your setup.
+ Made for jailbroken ARMv7 devices running iOS 6.0 or later.
+ IMPORTANT: After changing the color or Enable setting, completely power your iPhone off, then turn it back on to apply the changes. A respring alone is not enough.
+Author: M3gaIOS6p0w3r
+Name: StatusBarColor
+
