@@ -5,7 +5,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME := M3gaGravity
 M3gaGravity_FILES := Tweak.x
-M3gaGravity_FRAMEWORKS := UIKit Foundation QuartzCore
+M3gaGravity_FRAMEWORKS := UIKit Foundation QuartzCore CoreFoundation
 M3gaGravity_CFLAGS := -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
@@ -14,7 +14,7 @@ BUNDLE_NAME := M3gaGravityPrefs
 M3gaGravityPrefs_FILES := M3GRootListController.m
 M3gaGravityPrefs_INSTALL_PATH := /Library/PreferenceBundles
 M3gaGravityPrefs_BUNDLE_EXTENSION := .bundle
-M3gaGravityPrefs_FRAMEWORKS := UIKit Foundation
+M3gaGravityPrefs_FRAMEWORKS := UIKit Foundation CoreFoundation
 M3gaGravityPrefs_PRIVATE_FRAMEWORKS := Preferences
 M3gaGravityPrefs_RESOURCE_FILES := Root.plist
 M3gaGravityPrefs_PRINCIPAL_CLASS := M3GRootListController
