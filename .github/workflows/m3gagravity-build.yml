@@ -1,0 +1,42 @@
+name: Build M3gaGravity
+
+on:
+  push:
+    branches:
+      - m3gagravity-v1
+    paths:
+      - "M3gaGravity/**"
+      - ".github/workflows/m3gagravity-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out M3gaGravity
+        uses: actions/checkout@v4
+
+      - name: Set up Theos
+        uses: Randomblock1/theos-action@v1
+        with:
+          theos-dir: theos
+          theos-src: https://github.com/theos/theos
+          theos-sdks: https://github.com/theos/sdks
+          theos-sdks-branch: master
+
+      - name: Build Debian package
+        working-directory: M3gaGravity
+        run: |
+          make clean
+          make package FINALPACKAGE=1
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: M3gaGravity-deb
+          path: M3gaGravity/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
