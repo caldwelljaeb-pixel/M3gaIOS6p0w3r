@@ -6,7 +6,7 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME := M3gaGravity
 M3gaGravity_FILES := Tweak.x
 M3gaGravity_FRAMEWORKS := UIKit Foundation QuartzCore CoreFoundation
-M3gaGravity_CFLAGS := -fobjc-arc
+M3gaGravity_CFLAGS := -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
