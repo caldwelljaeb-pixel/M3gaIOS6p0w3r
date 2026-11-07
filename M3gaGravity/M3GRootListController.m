@@ -1,7 +1,16 @@
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
-#import <Preferences/PSListController.h>
-#import <Preferences/PSSpecifier.h>
+
+// Preferences is a private iOS framework; its SDK stub is linked by Theos,
+// while these small interfaces keep the project independent of private headers.
+@interface PSSpecifier : NSObject
+@property(nonatomic, readonly) NSDictionary *properties;
+@end
+
+@interface PSListController : UIViewController
+- (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
+@end
 
 @interface M3GRootListController : PSListController {
     NSArray *_m3gSpecifiers;
