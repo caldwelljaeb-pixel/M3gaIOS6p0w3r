@@ -1,9 +1,10 @@
 #import <Foundation/Foundation.h>
 
 // EXPERIMENTAL Doodle Jump 1.26 test.
-// Candidate: PowerUpObject type 0. Its tick logic contains a rocket-related
-// shouldShakeRocket: call near the low-fuel threshold. This is a clue, not
-// proof that type 0 is the jetpack.
+// Candidate: PowerUpObject type 0. The binary's tick method decrements fuel
+// and can change a non-type-2 object's type when that decrement reaches zero.
+// Refuel immediately BEFORE the original tick so the transition is prevented.
+// Type 0 remains a candidate, not a confirmed jetpack mapping.
 
 @interface PowerUpObject : NSObject
 - (int)objType;
@@ -16,12 +17,14 @@
 
 %hook PowerUpObject
 - (void)tick {
-    %orig;
-
-    // Experimental candidate: restore type 0 fuel when it runs out.
-    if ([self objType] == 0 && [self objFuel] <= 0) {
+    // In the original ARMv7 tick method, fuel is decremented and the
+    // zero-fuel transition is handled in the same call. Refill at 1 or less
+    // before %orig, so the original method never sees a zero-producing tick.
+    if ([self objType] == 0 && [self objFuel] <= 1) {
         [self setObjFuel:180];
     }
+
+    %orig;
 }
 %end
 %end
