@@ -7,10 +7,9 @@ M3gaStatusBarColor_FRAMEWORKS = UIKit
 M3gaStatusBarColor_CFLAGS = -Wno-deprecated-declarations
 BUNDLE_NAME = M3gaStatusBarColorPrefs
 M3gaStatusBarColorPrefs_FILES = Preferences/M3gaStatusBarColorController.m Preferences/M3gaStatusBarColorAboutController.m
-M3gaStatusBarColorPrefs_RESOURCE_FILES = Preferences/Root.plist Preferences/About.plist
+M3gaStatusBarColorPrefs_RESOURCE_FILES = Preferences/Root.plist Preferences/About.plist Info.plist
 M3gaStatusBarColorPrefs_INSTALL_PATH = /Library/PreferenceBundles
 M3gaStatusBarColorPrefs_FRAMEWORKS = UIKit
 M3gaStatusBarColorPrefs_PRIVATE_FRAMEWORKS = Preferences
-M3gaStatusBarColorPrefs_INFOPLIST = Info.plist
 include $(THEOS_MAKE_PATH)/tweak.mk
 include $(THEOS_MAKE_PATH)/bundle.mk
