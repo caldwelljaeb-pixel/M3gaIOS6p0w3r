@@ -16,3 +16,5 @@ The tweak and preference bundle are intentionally kept outside the live `debs/` 
 
 
 CI builds use the Linux iOS cross-compilation toolchain and the iOS 9.3 SDK, with iOS 6.0 retained as the deployment target.
+
+The tweak is injected only into `com.apple.springboard` by `Filter.plist`.
