@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <Preferences/PSListController.h>
+#import <Preferences/PSSpecifier.h>
 
 @interface M3GRootListController : PSListController {
     NSArray *_m3gSpecifiers;
@@ -16,8 +17,35 @@
     return _m3gSpecifiers;
 }
 
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+    NSString *domain = [specifier.properties objectForKey:@"defaults"];
+    NSString *key = [specifier.properties objectForKey:@"key"];
+    NSString *path = [NSString stringWithFormat:
+        @"/var/mobile/Library/Preferences/%@.plist", domain];
+
+    NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:path];
+    id value = [settings objectForKey:key];
+    return value ?: [specifier.properties objectForKey:@"default"];
+}
+
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
-    [super setPreferenceValue:value specifier:specifier];
+    NSString *domain = [specifier.properties objectForKey:@"defaults"];
+    NSString *key = [specifier.properties objectForKey:@"key"];
+    NSString *path = [NSString stringWithFormat:
+        @"/var/mobile/Library/Preferences/%@.plist", domain];
+
+    NSMutableDictionary *settings =
+        [NSMutableDictionary dictionaryWithContentsOfFile:path];
+    if (!settings) settings = [NSMutableDictionary dictionary];
+
+    if (key && value) [settings setObject:value forKey:key];
+
+    [[NSFileManager defaultManager] createDirectoryAtPath:
+        @"/var/mobile/Library/Preferences"
+        withIntermediateDirectories:YES
+        attributes:nil
+        error:NULL];
+    [settings writeToFile:path atomically:YES];
 
     CFNotificationCenterPostNotification(
         CFNotificationCenterGetDarwinNotifyCenter(),
