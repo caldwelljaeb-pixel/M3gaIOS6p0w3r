@@ -17,7 +17,7 @@ jobs:
       - name: Install Linux build prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y bash build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6
+          sudo apt-get install -y bash build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6 python3
 
       - name: Install Theos, Linux toolchain, and iOS 9.3 SDK
         env:
@@ -29,6 +29,31 @@ jobs:
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
           test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
           test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
+          # Theos' public 9.3 SDK stubs list simulator architectures in their
+          # top-level archs field. Keep ARM device arches only for this ARMv7
+          # package; leave nested exports.archs declarations untouched.
+          python3 - "$THEOS/sdks/iPhoneOS9.3.sdk" <<'PY'
+          import pathlib, re, sys
+          sdk = pathlib.Path(sys.argv[1])
+          pattern = re.compile(r"(?m)^(archs:\\s*\\[)([^\\]]*)(\\])")
+          changed = 0
+          for stub in sdk.rglob("*.tbd"):
+              try:
+                  source = stub.read_text()
+              except (OSError, UnicodeError):
+                  continue
+              def fix(match):
+                  items = [item.strip() for item in match.group(2).split(",")]
+                  items = [item for item in items if item not in {"i386", "x86_64"}]
+                  return match.group(1) + ", ".join(items) + match.group(3)
+              patched, count = pattern.subn(fix, source)
+              if count and patched != source:
+                  stub.write_text(patched)
+                  changed += 1
+          print(f"Adjusted top-level architecture declarations in {changed} SDK stubs")
+          if changed == 0:
+              raise SystemExit("No top-level SDK architecture declarations were patched")
+          PY
           echo "THEOS=$THEOS" >> "$GITHUB_ENV"
 
       - name: Build test package
