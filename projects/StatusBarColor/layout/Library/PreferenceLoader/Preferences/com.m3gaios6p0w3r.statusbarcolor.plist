@@ -4,16 +4,14 @@
 <dict>
   <key>entry</key>
   <dict>
-    <key>bundle</key>
-    <string>M3gaStatusBarColorPrefs</string>
     <key>cell</key>
     <string>PSLinkCell</string>
-    <key>detail</key>
-    <string>M3gaStatusBarColorController</string>
-    <key>isController</key>
-    <true/>
     <key>label</key>
     <string>StatusBarColor</string>
+    <key>isController</key>
+    <true/>
+    <key>bundle</key>
+    <string>M3gaStatusBarColorPrefs</string>
   </dict>
 </dict>
 </plist>
