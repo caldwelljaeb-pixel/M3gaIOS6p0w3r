@@ -17,7 +17,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang make perl git dpkg-dev fakeroot libplist-dev libssl-dev pkg-config
+          sudo apt-get install -y clang make perl git dpkg-dev fakeroot libplist-dev libssl-dev pkg-config curl xz-utils libtinfo6
           git clone --depth 1 https://github.com/ProcursusTeam/ldid.git "$RUNNER_TEMP/ldid"
           make -C "$RUNNER_TEMP/ldid" -j2
           sudo install -m 0755 "$RUNNER_TEMP/ldid/ldid" /usr/local/bin/ldid
@@ -28,6 +28,9 @@ jobs:
           git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
           mkdir -p "$HOME/theos/sdks"
           cp -a "$RUNNER_TEMP/theos-sdks/." "$HOME/theos/sdks/"
+          mkdir -p "$HOME/theos/toolchain"
+          curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$HOME/theos/toolchain/"
+          test -x "$HOME/theos/toolchain/linux/iphone/bin/clang"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
       - name: Build test package
