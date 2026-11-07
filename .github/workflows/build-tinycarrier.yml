@@ -17,17 +17,20 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang make perl git dpkg-dev fakeroot libplist-dev libssl-dev
+          sudo apt-get install -y clang make perl git dpkg-dev fakeroot libplist-dev libssl-dev xz-utils
           git clone --depth 1 https://github.com/ProcursusTeam/ldid.git "$RUNNER_TEMP/ldid"
           make -C "$RUNNER_TEMP/ldid" -j2
           sudo install -m 0755 "$RUNNER_TEMP/ldid/ldid" /usr/local/bin/ldid
 
-      - name: Install Theos and iOS SDKs
+      - name: Install Theos and iOS 9.3 SDK
         run: |
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
-          git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
           mkdir -p "$HOME/theos/sdks"
-          cp -a "$RUNNER_TEMP/theos-sdks/." "$HOME/theos/sdks/"
+          curl --location --fail --retry 3 \
+            https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS9.3.sdk.tar.xz \
+            --output "$RUNNER_TEMP/iPhoneOS9.3.sdk.tar.xz"
+          tar -xJf "$RUNNER_TEMP/iPhoneOS9.3.sdk.tar.xz" -C "$HOME/theos/sdks"
+          test -d "$HOME/theos/sdks/iPhoneOS9.3.sdk"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
       - name: Build test package
