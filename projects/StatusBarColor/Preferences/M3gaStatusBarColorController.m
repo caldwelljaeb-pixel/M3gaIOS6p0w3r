@@ -1,5 +1,4 @@
 #import <Preferences/PSListController.h>
-#import <Preferences/PSSpecifier.h>
 #import <UIKit/UIKit.h>
 @interface M3gaStatusBarColorController : PSListController
 - (void)openCreatorPage;
@@ -9,7 +8,7 @@
  if (!_specifiers) _specifiers = [[self loadSpecifiersFromPlistName:@"Root" target:self] retain];
  return _specifiers;
 }
-- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+- (void)setPreferenceValue:(id)value specifier:(id)specifier {
  // Clamp typed RGB values to the same 0–255 range as the sliders.
  NSString *key = [specifier propertyForKey:@"key"];
  BOOL isRGBKey = [key isEqualToString:@"Red"] ||
@@ -26,7 +25,7 @@
  // Keep the RGB slider and its numeric text field visually synchronized.
  if (![key length]) return;
 
- for (PSSpecifier *otherSpecifier in [self specifiers]) {
+ for (id otherSpecifier in [self specifiers]) {
   if (otherSpecifier != specifier &&
       [[otherSpecifier propertyForKey:@"key"] isEqualToString:key]) {
    [self reloadSpecifier:otherSpecifier];
