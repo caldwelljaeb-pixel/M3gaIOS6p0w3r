@@ -9,12 +9,12 @@
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
 @end
 
-@interface M3GRootListController : PSListController
-@end
-
-@implementation M3GRootListController {
+@interface M3GRootListController : PSListController {
     NSArray *_m3gSpecifiers;
 }
+@end
+
+@implementation M3GRootListController
 
 - (NSArray *)specifiers {
     if (!_m3gSpecifiers) {
