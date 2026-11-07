@@ -13,17 +13,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Report icon dimensions and artwork bounds
-        run: |
-          python3 - <<'PY'
-          from PIL import Image
-          im = Image.open("CydiaIcon.png").convert("RGBA")
-          alpha = im.getchannel("A")
-          print("Image dimensions:", im.size)
-          print("Alpha bounds:", alpha.getbbox())
-          print("Image mode:", im.mode)
-          PY
-
       - name: Upload original Cydia icon
         uses: actions/upload-artifact@v4
         with:
