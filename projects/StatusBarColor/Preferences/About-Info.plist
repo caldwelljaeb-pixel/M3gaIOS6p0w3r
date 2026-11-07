@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>com.m3gaios6p0w3r.statusbarcolor.about</string>
+<key>CFBundleExecutable</key><string>M3gaStatusBarColorPrefs</string>
+<key>CFBundleName</key><string>StatusBarColor About</string>
+<key>CFBundlePackageType</key><string>BNDL</string>
+<key>PrincipalClass</key><string>M3gaStatusBarColorAboutController</string>
+</dict></plist>

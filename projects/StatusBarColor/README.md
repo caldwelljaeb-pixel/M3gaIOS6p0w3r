@@ -13,3 +13,8 @@ An iOS 6 jailbreak tweak project for selecting the RGB color used by status-bar 
 The runtime hook currently prototypes the iOS 5/6 `UIStatusBarItemView -textColorForStyle:` method. This is a private API and must be verified on a real iOS 6 device before release. This source is a development build, not a release-ready package. Do not install until the build and runtime behavior have been tested.
 
 The tweak and preference bundle are intentionally kept outside the live `debs/` repository until testing is complete.
+
+
+CI builds use the Linux iOS cross-compilation toolchain and the iOS 9.3 SDK, with iOS 6.0 retained as the deployment target.
+
+The tweak is injected only into `com.apple.springboard` by `Filter.plist`.

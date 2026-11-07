@@ -1,9 +1,0 @@
-{
-    entry = {
-        bundle = M3gaStatusBarColorPrefs;
-        cell = PSLinkCell;
-        detail = M3gaStatusBarColorController;
-        icon = StatusBarColor.png;
-        label = StatusBarColor;
-    };
-}
