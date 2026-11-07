@@ -29,13 +29,12 @@ jobs:
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
           test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
           test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
-          # Theos' public 9.3 SDK stubs list simulator architectures in their
-          # top-level archs field. Keep ARM device arches only for this ARMv7
-          # package; leave nested exports.archs declarations untouched.
+          # Keep ARM device architectures in the top-level SDK stub list.
+          # Nested exports.archs declarations remain unchanged.
           python3 - "$THEOS/sdks/iPhoneOS9.3.sdk" <<'PY'
           import pathlib, re, sys
           sdk = pathlib.Path(sys.argv[1])
-          pattern = re.compile(r"(?m)^(archs:\\s*\\[)([^\\]]*)(\\])")
+          pattern = re.compile(r"(?m)^(archs:\s*\[)([^\]]*)(\])")
           changed = 0
           for stub in sdk.rglob("*.tbd"):
               try:
