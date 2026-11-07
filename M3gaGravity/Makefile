@@ -16,7 +16,7 @@ M3gaGravityPrefs_INSTALL_PATH := /Library/PreferenceBundles
 M3gaGravityPrefs_BUNDLE_EXTENSION := bundle
 M3gaGravityPrefs_FRAMEWORKS := UIKit Foundation CoreFoundation
 M3gaGravityPrefs_PRIVATE_FRAMEWORKS := Preferences
-M3gaGravityPrefs_RESOURCE_DIRS := M3gaGravityPrefs/Resources
+M3gaGravityPrefs_RESOURCE_DIRS := Resources
 M3gaGravityPrefs_CFLAGS := -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/bundle.mk
