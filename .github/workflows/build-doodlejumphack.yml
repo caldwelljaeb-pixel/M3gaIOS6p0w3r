@@ -29,6 +29,7 @@ jobs:
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
           test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
           test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
 
       - name: Build test package
         working-directory: projects/DoodleJumpHack
