@@ -17,35 +17,22 @@ jobs:
       - name: Install Linux build prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6
+          sudo apt-get install -y bash build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6
 
       - name: Install Theos, Linux toolchain, and iOS 9.3 SDK
         env:
           THEOS: ${{ runner.temp }}/theos
+          CI: "true"
         run: |
-          git clone --recursive https://github.com/theos/theos.git "$THEOS"
-          git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
-          rm -rf "$THEOS/sdks"
-          mv "$RUNNER_TEMP/theos-sdks" "$THEOS/sdks"
-          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
-          bash "$THEOS/bin/bootstrap.sh" || true
-          mkdir -p "$THEOS/toolchain"
-          "$THEOS/bin/install-theos" --help || true
-
-      - name: Install Theos Linux toolchain
-        run: |
-          mkdir -p "$THEOS/toolchain/linux"
-          git clone --depth 1 https://github.com/theos/llvm.git "$RUNNER_TEMP/theos-llvm" || true
-          if [ -d "$RUNNER_TEMP/theos-llvm" ]; then
-            find "$RUNNER_TEMP/theos-llvm" -maxdepth 2 -type f | head -30
-          fi
-          echo "Inspecting Theos toolchain location"
-          ls -la "$THEOS/toolchain" "$THEOS/toolchain/linux" || true
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          "$THEOS/bin/install-sdk" iPhoneOS9.3
+          test -x "$THEOS/toolchain/linux/iphone/bin/clang"
+          test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
+          test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
 
       - name: Build test package
         working-directory: projects/DoodleJumpHack
         run: |
-          test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
           make clean package FINALPACKAGE=1
           find packages -maxdepth 1 -type f -name '*.deb' -print
 
