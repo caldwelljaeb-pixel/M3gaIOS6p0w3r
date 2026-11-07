@@ -1,0 +1,44 @@
+name: Build TinyCarrier (test only)
+
+on:
+  push:
+    paths:
+      - "projects/TinyCarrier/**"
+      - ".github/workflows/build-tinycarrier.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang make perl git dpkg-dev fakeroot cmake libplist-dev libzip-dev
+          git clone --depth 1 https://github.com/ProcursusTeam/ldid.git "$RUNNER_TEMP/ldid"
+          cmake -S "$RUNNER_TEMP/ldid" -B "$RUNNER_TEMP/ldid/build" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/ldid/build" --parallel
+          sudo install -m 0755 "$RUNNER_TEMP/ldid/build/ldid" /usr/local/bin/ldid
+
+      - name: Install Theos and iOS SDKs
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+          git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+
+      - name: Build test package
+        working-directory: projects/TinyCarrier
+        run: |
+          make package FINALPACKAGE=1
+          find packages -maxdepth 1 -type f -name '*.deb' -print
+
+      - name: Upload test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: TinyCarrier-test-build
+          path: projects/TinyCarrier/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
