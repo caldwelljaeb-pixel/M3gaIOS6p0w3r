@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# Remove the obsolete PreferenceLoader entry shipped by older StatusBarColor builds.
+# The current package provides one correctly registered controller entry.
+rm -f /Library/PreferenceLoader/Preferences/StatusBarColor.plist
+
+exit 0

@@ -6,6 +6,6 @@
 <key>CFBundleIdentifier</key><string>com.m3gaios6p0w3r.statusbarcolorprefs</string>
 <key>CFBundleName</key><string>StatusBarColor</string>
 <key>CFBundlePackageType</key><string>BNDL</string>
-<key>CFBundleVersion</key><string>0.0.1-6</string>
+<key>CFBundleVersion</key><string>0.0.1-7</string>
 <key>NSPrincipalClass</key><string>M3gaStatusBarColorController</string>
 </dict></plist>

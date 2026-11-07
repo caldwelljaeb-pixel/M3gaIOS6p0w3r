@@ -1,6 +1,6 @@
 Package: com.m3gaios6p0w3r.statusbarcolor
 Name: StatusBarColor
-Version: 0.0.1-6
+Version: 0.0.1-7
 Architecture: iphoneos-arm
 Description: Recreated classic iOS 6 status-bar color controls with RGB sliders, numeric values, and an enable switch.
 Maintainer: M3gaIOS6p0w3r
