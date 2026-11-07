@@ -1,6 +1,12 @@
 name: Build M3gaGravity
 
 on:
+  push:
+    branches:
+      - m3gagravity-v1
+    paths:
+      - "M3gaGravity/**"
+      - ".github/workflows/m3gagravity-build.yml"
   pull_request:
     branches:
       - main
