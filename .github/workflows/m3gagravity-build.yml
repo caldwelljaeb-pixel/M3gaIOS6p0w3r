@@ -27,11 +27,18 @@ jobs:
           theos-sdks: https://github.com/theos/sdks
           theos-sdks-branch: master
 
-      - name: Build Debian package
+      - name: Build ARMv7 Debian package
         working-directory: M3gaGravity
         run: |
           make clean
           make package FINALPACKAGE=1
+
+      - name: Verify package
+        run: |
+          DEB="$(find M3gaGravity/packages -name '*.deb' -print -quit)"
+          test -n "$DEB"
+          dpkg-deb --info "$DEB"
+          dpkg-deb --contents "$DEB"
 
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
