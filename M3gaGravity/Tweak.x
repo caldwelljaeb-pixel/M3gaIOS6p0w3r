@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
+#import <math.h>
 
 @interface SBIconView : UIView
 @end
