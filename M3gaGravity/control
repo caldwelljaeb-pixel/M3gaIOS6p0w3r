@@ -1,0 +1,9 @@
+Package: com.m3ga.m3gagravity
+Name: M3gaGravity
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Tilt-controlled gravity physics for the iOS 6 SpringBoard.
+Maintainer: M3gaIOS6p0w3r
+Author: M3gaIOS6p0w3r
+Section: Tweaks
+Depends: mobilesubstrate
