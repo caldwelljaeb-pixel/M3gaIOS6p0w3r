@@ -23,6 +23,10 @@
             <string>Enabled</string>
             <key>default</key>
             <false/>
+            <key>get</key>
+            <string>readPreferenceValue:</string>
+            <key>set</key>
+            <string>setPreferenceValue:specifier:</string>
         </dict>
         <dict>
             <key>cell</key>
