@@ -3,33 +3,29 @@
 // Doodle Jump 1.26 (com.yourcompany.DoodleJump)
 // The hook is enabled only when the running app reports version 1.26.
 //
-// Static analysis of the supplied ARMv7 executable identified:
-//   PowerUpObject type 0 = jetpack
-//   objFuel is an int, initialized to 180 for type 0
-//
-// The game checks objFuel through its getter before ending a boost.
-// When a type-0 power-up reaches zero fuel, refill it to the original
-// 180-frame value. Other power-up types are not modified.
+// Reverse-engineering notes:
+// PowerUpObject stores its active power-up type and fuel in ivars.
+// Type 0 initializes with 180 frames of fuel. The tick method reads
+// the fuel ivar directly, so the tweak checks it after the original
+// tick completes and restores the fuel only if the type-0 object ran out.
 
 @interface PowerUpObject : NSObject
 - (int)objType;
 - (int)objFuel;
 - (void)setObjFuel:(int)fuel;
+- (void)tick;
 @end
 
 %group DoodleJump126
 
 %hook PowerUpObject
 
-- (int)objFuel {
-    int fuel = %orig;
+- (void)tick {
+    %orig;
 
-    if ([self objType] == 0 && fuel <= 0) {
+    if ([self objType] == 0 && [self objFuel] <= 0) {
         [self setObjFuel:180];
-        return 180;
     }
-
-    return fuel;
 }
 
 %end
