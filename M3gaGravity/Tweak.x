@@ -28,6 +28,9 @@ static BOOL M3GReadEnabled(void) {
 @interface M3GGravityController : NSObject <UIAccelerometerDelegate>
 @property(nonatomic, strong) NSHashTable *iconViews;
 @property(nonatomic, assign) CGPoint gravity;
+@property(nonatomic, assign) CGFloat baselineX;
+@property(nonatomic, assign) CGFloat baselineY;
+@property(nonatomic, assign) BOOL hasBaseline;
 @property(nonatomic, strong) CADisplayLink *displayLink;
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 + (instancetype)sharedController;
@@ -92,7 +95,12 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     self.enabled = M3GReadEnabled();
 
     if (wasEnabled && !self.enabled) {
+        self.hasBaseline = NO;
         [self restoreAllIcons];
+    } else if (!wasEnabled && self.enabled) {
+        // Treat the phone's current resting position as neutral.
+        self.hasBaseline = NO;
+        self.gravity = CGPointZero;
     }
 }
 
@@ -114,9 +122,24 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         return;
     }
 
-    // Ignore small sensor noise, then map tilt into UIKit's screen coordinates.
-    CGFloat x = fabs(acceleration.x) < 0.07 ? 0.0 : acceleration.x;
-    CGFloat y = fabs(acceleration.y) < 0.07 ? 0.0 : acceleration.y;
+    // Calibrate the current holding angle as neutral so gravity does not
+    // constantly pull the icons when the user is simply holding the phone.
+    if (!self.hasBaseline) {
+        self.baselineX = acceleration.x;
+        self.baselineY = acceleration.y;
+        self.hasBaseline = YES;
+        self.gravity = CGPointZero;
+        return;
+    }
+
+    CGFloat x = acceleration.x - self.baselineX;
+    CGFloat y = acceleration.y - self.baselineY;
+    if (fabs(x) < 0.07) x = 0.0;
+    if (fabs(y) < 0.07) y = 0.0;
+
+    // Clamp the input to keep abrupt movement from producing extreme speeds.
+    x = MAX(-0.75, MIN(0.75, x));
+    y = MAX(-0.75, MIN(0.75, y));
     self.gravity = CGPointMake(x * 650.0, -y * 650.0);
 }
 
