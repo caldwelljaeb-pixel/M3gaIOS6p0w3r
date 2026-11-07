@@ -1,7 +1,9 @@
 #import <Foundation/Foundation.h>
 
 // Doodle Jump 1.26 (com.yourcompany.DoodleJump)
-// Static analysis of its ARMv7 executable identifies:
+// The hook is enabled only when the running app reports version 1.26.
+//
+// Static analysis of the supplied ARMv7 executable identified:
 //   PowerUpObject type 0 = jetpack
 //   objFuel is an int, initialized to 180 for type 0
 //
@@ -14,6 +16,8 @@
 - (int)objFuel;
 - (void)setObjFuel:(int)fuel;
 @end
+
+%group DoodleJump126
 
 %hook PowerUpObject
 
@@ -29,3 +33,14 @@
 }
 
 %end
+
+%end
+
+%ctor {
+    @autoreleasepool {
+        NSString *appVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+        if ([appVersion isEqualToString:@"1.26"]) {
+            %init(DoodleJump126);
+        }
+    }
+}
