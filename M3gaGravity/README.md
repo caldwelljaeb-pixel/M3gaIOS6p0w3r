@@ -24,6 +24,8 @@ The PreferenceLoader entry registers `M3gaGravityPrefs` in Settings. Its `Resour
 Gravity is OFF by default. Enable it in Settings > M3gaGravity. Turn it off there to restore tracked icons. If SpringBoard becomes unstable, use substrate safe mode or remove the package rather than repeatedly respringing.
 
 ## Build
+
+The ARMv7 build is also run directly on pushes to the `m3gagravity-v1` branch, as well as on draft pull requests.
 The GitHub Actions workflow builds an ARMv7 Debian package using Theos and uploads the .deb as a workflow artifact. It verifies the package metadata and file layout before uploading.
 
 ## Prototype limitations
