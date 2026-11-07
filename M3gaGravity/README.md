@@ -24,6 +24,9 @@ The PreferenceLoader entry registers `M3gaGravityPrefs` in Settings. Its `Resour
 Gravity is OFF by default. Enable it in Settings > M3gaGravity. Turn it off there to restore tracked icons. If SpringBoard becomes unstable, use substrate safe mode or remove the package rather than repeatedly respringing.
 
 ## Build
+
+The current CI build suppresses the SDK deprecation warning for UIKit's legacy accelerometer API; that API is retained deliberately for iOS 6 runtime compatibility.
+
 The GitHub Actions workflow builds an ARMv7 Debian package using Theos and uploads the .deb as a workflow artifact. It verifies the package metadata and file layout before uploading.
 
 ## Prototype limitations
