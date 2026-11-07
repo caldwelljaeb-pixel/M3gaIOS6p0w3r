@@ -41,10 +41,12 @@ jobs:
           make package FINALPACKAGE=1
           find packages -maxdepth 1 -type f -name '*.deb' -print
 
-      - name: Upload test package
+      - name: Upload test package and repository icon for inspection
         uses: actions/upload-artifact@v4
         with:
-          name: StatusBarColor-test-build
-          path: projects/StatusBarColor/packages/*.deb
+          name: StatusBarColor-icon-inspection
+          path: |
+            projects/StatusBarColor/packages/*.deb
+            CydiaIcon.png
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
