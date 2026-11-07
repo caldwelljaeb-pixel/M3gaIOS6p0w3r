@@ -10,10 +10,20 @@
  return _specifiers;
 }
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+ // Clamp typed RGB values to the same 0–255 range as the sliders.
+ NSString *key = [specifier propertyForKey:@"key"];
+ BOOL isRGBKey = [key isEqualToString:@"Red"] ||
+                 [key isEqualToString:@"Green"] ||
+                 [key isEqualToString:@"Blue"];
+ if (isRGBKey) {
+  NSInteger component = [value respondsToSelector:@selector(integerValue)] ? [value integerValue] : 0;
+  component = MAX(0, MIN(255, component));
+  value = [NSNumber numberWithInteger:component];
+ }
+
  [super setPreferenceValue:value specifier:specifier];
 
  // Keep the RGB slider and its numeric text field visually synchronized.
- NSString *key = [specifier propertyForKey:@"key"];
  if (![key length]) return;
 
  for (PSSpecifier *otherSpecifier in [self specifiers]) {
