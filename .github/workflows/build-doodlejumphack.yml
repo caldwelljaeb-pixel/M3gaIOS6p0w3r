@@ -67,8 +67,8 @@ jobs:
           make clean package FINALPACKAGE=1
           test "$(find packages -maxdepth 1 -type f -name '*.deb' | wc -l)" -eq 1
           dpkg-deb -f packages/*.deb Version Description
-          dpkg-deb -f packages/*.deb Version | grep -Fx '0.1.2'
-          dpkg-deb -f packages/*.deb Description | grep -F 'candidate power-up type 0'
+          dpkg-deb -f packages/*.deb Version | grep -Fx '0.1.3'
+          dpkg-deb -f packages/*.deb Description | grep -F 'before its tick'
 
       - name: Upload test package
         uses: actions/upload-artifact@v4
