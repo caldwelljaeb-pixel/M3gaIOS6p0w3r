@@ -171,9 +171,10 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
             CGFloat minimumDistance = (firstSize + secondSize) * 0.38;
             if (distanceSquared >= minimumDistance * minimumDistance) continue;
 
-            CGFloat distance = sqrt(MAX(distanceSquared, 0.0001));
-            CGFloat nx = distance < 0.01 ? 1.0 : dx / distance;
-            CGFloat ny = distance < 0.01 ? 0.0 : dy / distance;
+            BOOL centersOverlap = distanceSquared < 0.0001;
+            CGFloat distance = centersOverlap ? 0.01 : sqrt(distanceSquared);
+            CGFloat nx = centersOverlap ? 1.0 : dx / distance;
+            CGFloat ny = centersOverlap ? 0.0 : dy / distance;
             CGFloat overlap = minimumDistance - distance;
 
             // Separate the icons evenly so they cannot remain interpenetrating.
