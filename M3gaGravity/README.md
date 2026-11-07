@@ -28,5 +28,8 @@ Gravity is OFF by default. Enable it in Settings > M3gaGravity. Turn it off ther
 The ARMv7 build is also run directly on pushes to the `m3gagravity-v1` branch, as well as on draft pull requests.
 The GitHub Actions workflow builds an ARMv7 Debian package using Theos and uploads the .deb as a workflow artifact. It verifies the package metadata and file layout before uploading.
 
+## CI rebuild
+The CI attempt after the warning fix is intentionally kept separate from the first failed build; do not treat the package as tested until the ARMv7 artifact is verified.
+
 ## Prototype limitations
 This is a first physics prototype, not yet device-validated. Collisions only resolve for icons sharing the same immediate superview, so collisions across pages/dock containers are not implemented. Sensor direction and motion strength need physical testing on iOS 6.1.3. Icon view class and SpringBoard layout interactions also need on-device verification. The build must be confirmed successful before installing.
