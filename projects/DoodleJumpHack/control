@@ -1,8 +1,8 @@
 Package: com.m3gaios6p0w3r.doodlejumphack
 Name: Doodle Jump Hack v.1.26 😎 (Experimental)
-Version: 0.1.2
+Version: 0.1.3
 Architecture: iphoneos-arm
-Description: EXPERIMENTAL: tests continuous refueling for candidate power-up type 0 in Doodle Jump 1.26. The jetpack mapping is unconfirmed.
+Description: EXPERIMENTAL: refills candidate power-up type 0 before its tick to prevent the game's zero-fuel type transition. Jetpack mapping remains unconfirmed.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Games
