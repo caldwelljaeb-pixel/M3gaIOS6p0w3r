@@ -29,7 +29,7 @@ jobs:
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
           test -x "$THEOS/toolchain/linux/iphone/bin/ldid"
           test -d "$THEOS/sdks/iPhoneOS9.3.sdk"
-          # Keep ARM device architectures in the top-level SDK stub list.
+          # Keep ARM device architectures in top-level SDK stubs.
           # Nested exports.archs declarations remain unchanged.
           python3 - "$THEOS/sdks/iPhoneOS9.3.sdk" <<'PY'
           import pathlib, re, sys
@@ -52,6 +52,17 @@ jobs:
           print(f"Adjusted top-level architecture declarations in {changed} SDK stubs")
           if changed == 0:
               raise SystemExit("No top-level SDK architecture declarations were patched")
+          # The 9.3 SDK's libSystem.tbd advertises liblaunch as a re-export,
+          # but the matching liblaunch.tbd stub is absent from this SDK tree.
+          # This tweak does not use liblaunch symbols, so omit only that
+          # build-time re-export instead of inventing a fake library stub.
+          libsystem = sdk / "usr/lib/libSystem.tbd"
+          libsystem_text = libsystem.read_text()
+          missing = "/usr/lib/system/liblaunch.dylib, "
+          if missing not in libsystem_text:
+              raise SystemExit("Expected liblaunch re-export entry was not found")
+          libsystem.write_text(libsystem_text.replace(missing, "", 1))
+          print("Removed missing, unused liblaunch re-export from the build SDK")
           PY
           echo "THEOS=$THEOS" >> "$GITHUB_ENV"
 
