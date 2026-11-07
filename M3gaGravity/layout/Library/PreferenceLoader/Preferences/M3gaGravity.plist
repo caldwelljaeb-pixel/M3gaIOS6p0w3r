@@ -1,0 +1,8 @@
+{
+    entry = {
+        bundle = M3gaGravityPrefs;
+        cell = PSLinkCell;
+        isController = 1;
+        label = M3gaGravity;
+    };
+}
