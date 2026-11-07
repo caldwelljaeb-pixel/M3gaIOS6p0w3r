@@ -17,11 +17,10 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang make perl git dpkg-dev fakeroot cmake libplist-dev libzip-dev
+          sudo apt-get install -y clang make perl git dpkg-dev fakeroot libplist-dev libssl-dev pkg-config
           git clone --depth 1 https://github.com/ProcursusTeam/ldid.git "$RUNNER_TEMP/ldid"
-          cmake -S "$RUNNER_TEMP/ldid" -B "$RUNNER_TEMP/ldid/build" -DCMAKE_BUILD_TYPE=Release
-          cmake --build "$RUNNER_TEMP/ldid/build" --parallel
-          sudo install -m 0755 "$RUNNER_TEMP/ldid/build/ldid" /usr/local/bin/ldid
+          make -C "$RUNNER_TEMP/ldid" -j2
+          sudo install -m 0755 "$RUNNER_TEMP/ldid/ldid" /usr/local/bin/ldid
 
       - name: Install Theos and iOS SDKs
         run: |
