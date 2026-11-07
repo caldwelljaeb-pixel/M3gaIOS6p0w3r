@@ -1,8 +1,9 @@
 #import <Foundation/Foundation.h>
 
 // EXPERIMENTAL Doodle Jump 1.26 test.
-// Candidate: PowerUpObject type 2. This is a hypothesis, not a confirmed
-// jetpack mapping. Type 2 initializes with 600 fuel in the inspected binary.
+// Candidate: PowerUpObject type 0. Its tick logic contains a rocket-related
+// shouldShakeRocket: call near the low-fuel threshold. This is a clue, not
+// proof that type 0 is the jetpack.
 
 @interface PowerUpObject : NSObject
 - (int)objType;
@@ -17,9 +18,9 @@
 - (void)tick {
     %orig;
 
-    // Experimental candidate: keep type 2 fueled.
-    if ([self objType] == 2 && [self objFuel] <= 0) {
-        [self setObjFuel:600];
+    // Experimental candidate: restore type 0 fuel when it runs out.
+    if ([self objType] == 0 && [self objFuel] <= 0) {
+        [self setObjFuel:180];
     }
 }
 %end
