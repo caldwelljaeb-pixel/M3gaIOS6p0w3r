@@ -25,7 +25,9 @@ jobs:
       - name: Install Theos and iOS SDKs
         run: |
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
-          git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
+          git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
+          mkdir -p "$HOME/theos/sdks"
+          cp -a "$RUNNER_TEMP/theos-sdks/." "$HOME/theos/sdks/"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
       - name: Build test package
