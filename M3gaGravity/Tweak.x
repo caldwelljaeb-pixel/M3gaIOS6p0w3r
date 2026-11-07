@@ -2,6 +2,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <math.h>
+#import <dispatch/dispatch.h>
 
 @interface SBIconView : UIView
 @end
@@ -39,8 +40,10 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
                                            CFStringRef name,
                                            const void *object,
                                            CFDictionaryRef userInfo) {
-    M3GGravityController *controller = (M3GGravityController *)observer;
-    [controller reloadPreferences];
+    M3GGravityController *controller = (__bridge M3GGravityController *)observer;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [controller reloadPreferences];
+    });
 }
 
 @implementation M3GGravityController
