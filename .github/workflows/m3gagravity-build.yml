@@ -1,0 +1,75 @@
+name: Build M3gaGravity
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "M3gaGravity/**"
+      - ".github/workflows/m3gagravity-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out M3gaGravity
+        uses: actions/checkout@v4
+
+      - name: Set up Theos
+        uses: Randomblock1/theos-action@v1
+        with:
+          theos-dir: ${{ github.workspace }}/theos
+          theos-src: https://github.com/theos/theos
+          theos-sdks: https://github.com/theos/sdks
+          theos-sdks-branch: master
+
+      - name: Build ARMv7 Debian package
+        working-directory: M3gaGravity
+        run: |
+          make clean
+          make package FINALPACKAGE=1
+
+      - name: Verify package
+        run: |
+          DEB="$(find M3gaGravity/packages -name '*.deb' -print -quit)"
+          test -n "$DEB"
+          dpkg-deb --info "$DEB"
+          dpkg-deb --contents "$DEB"
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: M3gaGravity-deb
+          path: M3gaGravity/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
+
+  report:
+    runs-on: ubuntu-22.04
+    needs: build
+    if: always()
+    steps:
+      - name: Publish build status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const succeeded = "${{ needs.build.result }}" === "success";
+            const sha = context.payload.pull_request
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: succeeded ? "success" : "failure",
+              context: "m3gagravity/build",
+              description: succeeded
+                ? "ARMv7 Debian package built and verified"
+                : "Build failed; inspect the Actions logs",
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
