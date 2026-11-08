@@ -13,7 +13,7 @@ if not deb.is_file():
 control = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Package"], text=True).strip()
 version = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Version"], text=True).strip()
 arch = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Architecture"], text=True).strip()
-assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.0", "iphoneos-arm")
+assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.1", "iphoneos-arm")
 
 with tempfile.TemporaryDirectory() as temp:
     root = Path(temp)
