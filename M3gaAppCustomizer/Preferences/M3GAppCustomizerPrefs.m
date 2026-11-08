@@ -175,6 +175,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         PSSpecifier *reset = [PSSpecifier preferenceSpecifierNamed:[NSString stringWithFormat:@"Reset %@", name]
             target:self set:NULL get:NULL detail:Nil cell:buttonCell edit:Nil];
         [reset setProperty:bundleID forKey:@"M3GBundleID"];
+        [reset setProperty:name forKey:@"M3GAppName"];
         [reset setProperty:NSStringFromSelector(@selector(resetAppCustomization:)) forKey:@"action"];
         [reset setButtonAction:@selector(resetAppCustomization:)];
         [items addObject:reset];
@@ -195,7 +196,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     [_pendingResetBundleIdentifier release];
     _pendingResetBundleIdentifier = [bundleID copy];
 
-    NSString *appName = [specifier name];
+    NSString *appName = [specifier propertyForKey:@"M3GAppName"];
     if (![appName isKindOfClass:[NSString class]] || appName.length == 0)
         appName = bundleID;
     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Reset App Customization?"
@@ -211,8 +212,9 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     if (buttonIndex == 1 && _pendingResetBundleIdentifier.length > 0) {
         NSMutableDictionary *prefs = M3GAMutablePreferences();
         id storedNames = [prefs objectForKey:@"Names"];
-        NSMutableDictionary *names = [storedNames isKindOfClass:[NSDictionary class]]
-            ? [storedNames mutableCopy] : [NSMutableDictionary dictionary];
+        NSMutableDictionary *names = nil;
+        if ([storedNames isKindOfClass:[NSDictionary class]]) names = [storedNames mutableCopy];
+        else names = [[NSMutableDictionary alloc] init];
         [names removeObjectForKey:_pendingResetBundleIdentifier];
         if (names.count > 0) [prefs setObject:names forKey:@"Names"];
         else [prefs removeObjectForKey:@"Names"];
