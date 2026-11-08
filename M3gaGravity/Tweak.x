@@ -39,6 +39,17 @@ static BOOL M3GReadEnabled(void) {
         return NO;
     }
 
+    // V0.2.11 upgrade migration: force gravity OFF once even if an older
+    // installation saved Enabled=YES during testing. After this marker is
+    // written, later user choices are preserved normally.
+    if (![[saved objectForKey:@"M3GV0211DefaultOffConfigured"] boolValue]) {
+        NSMutableDictionary *updated = saved ? [saved mutableCopy] : [NSMutableDictionary dictionary];
+        [updated setObject:[NSNumber numberWithBool:NO] forKey:@"Enabled"];
+        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"M3GV0211DefaultOffConfigured"];
+        [updated writeToFile:@"/var/mobile/Library/Preferences/com.m3ga.m3gagravity.plist" atomically:YES];
+        return NO;
+    }
+
     id enabled = [saved objectForKey:@"Enabled"];
     return enabled ? [enabled boolValue] : NO;
 }
