@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>Instructions</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>1. Gravity and Falling</string>
+            <key>footerText</key>
+            <string>When Enable Gravity is ON, Home Screen icons are pulled downward by simulated gravity. They accelerate as they fall toward the bottom of their page. The movement is automatic: you do not need to tilt or shake your iPhone. M3gaGravity does not use the accelerometer.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>2. Collisions and Piles</string>
+            <key>footerText</key>
+            <string>Icons can bump into other icons in the same Home Screen container. When two icons overlap, the physics solver pushes them apart and transfers some of their movement. This lets them collect into a loose heap on the floor instead of passing through one another. Icons can also bounce off the edges and bottom of their container. The final pile can shift as more icons fall and settle.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>3. Pick Up, Drag, and Fling</string>
+            <key>footerText</key>
+            <string>Touch and hold an icon briefly to pick it up. After it is picked up, move your finger to drag the icon around its page. Release your finger to fling it. The direction and speed of your finger movement affect the fling. You can pick up the same icon again after a fling; the pickup gesture is reset after each completed or cancelled drag.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>4. Switching Home Screen Pages</string>
+            <key>footerText</key>
+            <string>Use a normal quick horizontal swipe to move between Home Screen pages. The icon pickup gesture waits briefly so a page swipe can happen first. Physics pauses while SpringBoard is actively scrolling or decelerating, then resumes after the page settles. Only icons within the visible screen area are included in each physics update to reduce unnecessary work.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>5. Performance</string>
+            <key>footerText</key>
+            <string>The simulation is capped at about 30 physics updates per second. This is intended to reduce the workload on older devices while SpringBoard continues drawing at its normal refresh rate. Performance depends on the number of visible icons and what else the iPhone is doing. Because this is an experimental iOS 6 prototype, some motion or collisions may not look perfectly identical every time.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>6. Turning Gravity On or Off</string>
+            <key>footerText</key>
+            <string>Gravity is OFF by default, including after a fresh install. Open M3gaGravity in Settings and turn Enable Gravity ON to start the simulation. Turn the switch OFF to stop the simulation and restore icons to their original positions. Your switch selection is saved in the preference file and is read again by SpringBoard.</string>
+        </dict>
+    </array>
+</dict>
+</plist>

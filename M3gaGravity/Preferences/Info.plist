@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleExecutable</key>
+    <string>M3gaGravityPrefs</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.m3ga.m3gagravity.preferences</string>
+    <key>CFBundleName</key>
+    <string>M3gaGravity Preferences</string>
+    <key>CFBundlePackageType</key>
+    <string>BNDL</string>
+    <key>CFBundleVersion</key>
+    <string>0.2.11</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.2.11</string>
+    <key>NSPrincipalClass</key>
+    <string>M3GAboutController</string>
+    <key>MinimumOSVersion</key>
+    <string>6.0</string>
+</dict>
+</plist>

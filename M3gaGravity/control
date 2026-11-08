@@ -1,8 +1,8 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.10
+Version: 0.2.11
 Architecture: iphoneos-arm
-Description: GraviBoard-style physics with reliable icon pickup, page scrolling, and an About Me creator section for iOS 6.
+Description: GraviBoard-style icon physics with dedicated Instructions and creator information pages for iOS 6.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks

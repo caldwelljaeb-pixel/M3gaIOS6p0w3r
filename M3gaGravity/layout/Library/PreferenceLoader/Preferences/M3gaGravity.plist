@@ -18,6 +18,8 @@
             <string>PSGroupCell</string>
             <key>label</key>
             <string>Gravity Physics</string>
+            <key>footerText</key>
+            <string>Gravity is OFF by default. Turn it on when you are ready to let your Home Screen icons fall, collide, and pile up. Turn it off any time to stop the simulation and restore the original icon positions.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -35,57 +37,29 @@
         </dict>
         <dict>
             <key>cell</key>
-            <string>PSGroupCell</string>
+            <string>PSLinkCell</string>
             <key>label</key>
-            <string>How it works</string>
+            <string>Instructions</string>
+            <key>bundle</key>
+            <string>M3gaGravityPrefs</string>
+            <key>detail</key>
+            <string>M3GInstructionsController</string>
         </dict>
         <dict>
             <key>cell</key>
-            <string>PSStaticTextCell</string>
+            <string>PSLinkCell</string>
             <key>label</key>
-            <string>Enable Gravity to make icons fall, collide, and pile up. Hold an icon briefly to pick it up, drag freely, and release to fling it. Pickup resets after each drag. Normal page swipes remain responsive. Physics pauses while a page is moving. Gravity is OFF by default.</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSGroupCell</string>
-            <key>label</key>
-            <string>About M3gaGravity</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSStaticTextCell</string>
-            <key>label</key>
-            <string>M3gaGravity V1 Prototype</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSStaticTextCell</string>
-            <key>label</key>
-            <string>Made with ❤️ by M3gaIOS6p0w3r</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSStaticTextCell</string>
-            <key>label</key>
-            <string>Version 0.2.10</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSGroupCell</string>
-            <key>label</key>
-            <string>About Me</string>
-        </dict>
-        <dict>
-            <key>cell</key>
-            <string>PSStaticTextCell</string>
-            <key>label</key>
-            <string>M3gaIOS6p0w3r creates tweaks, themes, and utilities for classic iOS devices, with a focus on keeping the legacy iOS community fun and useful. Thanks for using my work!</string>
+            <string>Info About Me</string>
+            <key>bundle</key>
+            <string>M3gaGravityPrefs</string>
+            <key>detail</key>
+            <string>M3GAboutController</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>Experimental icon physics for iOS 6. No accelerometer input is used. Gravity is OFF by default.</string>
+            <string>M3gaGravity V1 Prototype. Made with ❤️ by M3gaIOS6p0w3r. Version 0.2.11. Gravity is OFF by default.</string>
         </dict>
     </array>
 </dict>

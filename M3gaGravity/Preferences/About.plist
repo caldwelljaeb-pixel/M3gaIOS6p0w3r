@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>Info About Me</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>About the Creator</string>
+            <key>footerText</key>
+            <string>M3gaIOS6p0w3r creates jailbreak tweaks, themes, and utilities for classic iOS devices. The goal is to keep older iPhones fun, customizable, and useful while preserving the look and feel of classic iOS. M3gaGravity is one of these experimental projects, made for people who still enjoy customizing legacy devices.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Made with ❤️ by M3gaIOS6p0w3r</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>M3gaGravity V1 Prototype — Version 0.2.11</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Visit My Website</string>
+            <key>action</key>
+            <string>openCreatorPage</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerText</key>
+            <string>The website button opens the M3gaIOS6p0w3r creator profile in Safari.</string>
+        </dict>
+    </array>
+</dict>
+</plist>
