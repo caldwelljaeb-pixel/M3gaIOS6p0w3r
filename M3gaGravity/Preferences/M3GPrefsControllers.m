@@ -28,6 +28,14 @@ static char M3GAboutCacheKey;
     return @"Instructions";
 }
 
+/* This action is used by the Website button on the main M3gaGravity page. */
+- (void)openCreatorWebsite {
+    NSURL *websiteURL = [NSURL URLWithString:@"https://github.com/caldwelljaeb-pixel"];
+    if (websiteURL) {
+        [[UIApplication sharedApplication] openURL:websiteURL];
+    }
+}
+
 - (NSArray *)specifiers {
     NSArray *cached = objc_getAssociatedObject(self, &M3GInstructionsCacheKey);
     if (!cached) {
