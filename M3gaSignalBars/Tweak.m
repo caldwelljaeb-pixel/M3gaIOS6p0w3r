@@ -162,15 +162,14 @@ static void MSBRefreshStatusBar(void) {
     }
 
     int found = 0;
+    BOOL enabled = MSBIsEnabled();
     if ([statusBar isKindOfClass:[UIView class]]) {
-        MSBVisitViews((UIView *)statusBar, MSBIsEnabled(), &found);
+        MSBVisitViews((UIView *)statusBar, enabled, &found);
     }
 
-    if (!MSBLoggedRefresh) {
-        MSBLoggedRefresh = YES;
-        MSBLog([NSString stringWithFormat:@"Initial status-bar scan found %d signal view(s); Enabled=%d.",
-                found, MSBIsEnabled()]);
-    }
+    MSBLog([NSString stringWithFormat:@"Status-bar scan found %d signal view(s); Enabled=%d.",
+            found, enabled]);
+    MSBLoggedRefresh = YES;
 }
 
 static BOOL MSBUpdateForNewData(id self,
@@ -236,6 +235,8 @@ static void MSBPreferencesChangedCallback(CFNotificationCenterRef center,
                                           const void *object,
                                           CFDictionaryRef userInfo) {
     dispatch_async(dispatch_get_main_queue(), ^{
+        MSBLog([NSString stringWithFormat:@"Settings notification received; Enabled=%d.",
+                MSBIsEnabled()]);
         MSBRefreshStatusBar();
     });
 }
