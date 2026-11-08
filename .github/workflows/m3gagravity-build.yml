@@ -7,6 +7,12 @@ on:
     paths:
       - "M3gaGravity/**"
       - ".github/workflows/m3gagravity-build.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "M3gaGravity/**"
+      - ".github/workflows/m3gagravity-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -27,6 +33,45 @@ jobs:
           theos-src: https://github.com/theos/theos
           theos-sdks: https://github.com/theos/sdks
           theos-sdks-branch: master
+
+      - name: Remove simulator architectures from iOS SDK stubs
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          sdk = Path(os.environ["THEOS"]) / "sdks" / "iPhoneOS9.3.sdk"
+          if not sdk.is_dir():
+              raise SystemExit(f"Expected SDK not found: {sdk}")
+
+          changed = 0
+          scanned = 0
+
+          for stub in sdk.rglob("*.tbd"):
+              scanned += 1
+              lines = stub.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+              updated_lines = []
+
+              for line in lines:
+                  if line.startswith("archs:") and "[" in line and "]" in line:
+                      before, values_and_after = line.split("[", 1)
+                      values, after = values_and_after.split("]", 1)
+                      arches = [item.strip() for item in values.split(",") if item.strip()]
+                      filtered = [item for item in arches if item not in {"i386", "x86_64"}]
+                      if filtered != arches:
+                          changed += 1
+                          line = before + "[" + ", ".join(filtered) + "]" + after
+                  updated_lines.append(line)
+
+              updated = "".join(updated_lines)
+              original = stub.read_text(encoding="utf-8", errors="replace")
+              if updated != original:
+                  stub.write_text(updated, encoding="utf-8")
+
+          print(f"Scanned {scanned} SDK stubs; corrected {changed} top-level architecture lists.")
+          if changed == 0:
+              raise SystemExit("No simulator architecture entries were found; stop rather than silently building with an uncorrected SDK.")
+          PY
 
       - name: Build ARMv7 Debian package
         working-directory: M3gaGravity
@@ -59,10 +104,13 @@ jobs:
         with:
           script: |
             const succeeded = "${{ needs.build.result }}" === "success";
+            const sha = context.payload.pull_request
+              ? context.payload.pull_request.head.sha
+              : context.sha;
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: context.sha,
+              sha,
               state: succeeded ? "success" : "failure",
               context: "m3gagravity/build",
               description: succeeded
