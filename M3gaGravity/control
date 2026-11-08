@@ -1,8 +1,8 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.9
+Version: 0.2.10
 Architecture: iphoneos-arm
-Description: Re-arm icon pickup after every drag; preserve SpringBoard page scrolling and touch fling on iOS 6.
+Description: GraviBoard-style physics with reliable icon pickup, page scrolling, and an About Me creator section for iOS 6.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks
