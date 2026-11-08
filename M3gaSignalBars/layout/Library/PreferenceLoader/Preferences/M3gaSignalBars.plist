@@ -1,0 +1,10 @@
+{
+    entry = {
+        bundle = "M3gaSignalBarsPrefs";
+        cell = PSLinkCell;
+        detail = "M3GSignalBarsRootController";
+        isController = true;
+        label = "M3gaSignalBars";
+        icon = "M3gaSignalBars";
+    };
+}
