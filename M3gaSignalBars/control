@@ -1,6 +1,6 @@
 Package: com.m3ga.m3gasignalbars
 Name: M3gaSignalBars
-Version: 0.1.2
+Version: 0.1.3
 Architecture: iphoneos-arm
 Description: Cosmetic full-strength cellular signal bars for classic iOS 6.
  Displays five full native iOS 6 cellular signal bars when enabled and restores
