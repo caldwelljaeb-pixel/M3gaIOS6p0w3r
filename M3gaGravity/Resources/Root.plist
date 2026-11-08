@@ -22,7 +22,7 @@
             <key>key</key>
             <string>Enabled</string>
             <key>default</key>
-            <false/>
+            <true/>
             <key>get</key>
             <string>readPreferenceValue:</string>
             <key>set</key>
@@ -38,7 +38,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Tilt your iPhone to move icons. Icons bounce off the edges and collide with other icons sharing the same SpringBoard container. Switch Enable Gravity off to restore their original positions.</string>
+            <string>Icons fall under gravity, collide, and pile up. Touch and drag an icon, then release to fling it. Gravity starts automatically. Switch Enable Gravity off to restore the original icon positions.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -62,13 +62,13 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Version 0.2.2</string>
+            <string>Version 0.2.6</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>Experimental icon physics for iOS 6. Gravity is disabled by default.</string>
+            <string>Experimental icon physics for iOS 6. Gravity starts automatically.</string>
         </dict>
     </array>
 </dict>
