@@ -13,7 +13,7 @@ def field(name):
     ).strip()
 
 assert field("Package") == "com.m3ga.m3gasignalbars"
-assert field("Version") == "0.1.0"
+assert field("Version") == "0.1.1"
 assert field("Architecture") == "iphoneos-arm"
 
 with tempfile.TemporaryDirectory() as temp:
@@ -51,17 +51,16 @@ with tempfile.TemporaryDirectory() as temp:
     assert switch["default"] is False, "Enable switch must default OFF"
     assert switch["PostNotification"] == "com.m3ga.m3gasignalbars/preferences.changed"
     labels = [item.get("label") for item in items]
-    assert "About the Tweak" in labels
-    assert "Instructions" in labels
-    assert "Info About Me" in labels
-    assert "Website" in labels
+    for expected in ("About the Tweak", "Instructions", "Info About Me", "Website"):
+        assert expected in labels, "Missing Settings row: " + expected
 
     with (prefs_bundle / "Info.plist").open("rb") as stream:
         info = plistlib.load(stream)
     assert info.get("CFBundleIdentifier") == "com.m3ga.m3gasignalbars.preferences"
 
     magic = dylib.read_bytes()[:4]
-    assert magic in (b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"),         "Tweak is not a little-endian ARM Mach-O image"
+    assert magic in (b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"), \
+        "Tweak is not a little-endian ARM Mach-O image"
 
 print("PASS: Debian metadata, SpringBoard filter, ARM Mach-O, PreferenceLoader bundle, "
       "OFF-by-default switch, About the Tweak, Instructions, About Me, and Website verified.")

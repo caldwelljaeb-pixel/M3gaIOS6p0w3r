@@ -82,7 +82,6 @@ jobs:
           dpkg-deb --info "$DEB"
           dpkg-deb --contents "$DEB"
           python3 M3gaSignalBars/Tests/verify_package.py "$DEB"
-          file "$(mktemp -u)" >/dev/null 2>&1 || true
           DYLIB_DIR="$(mktemp -d)"
           dpkg-deb -x "$DEB" "$DYLIB_DIR"
           file "$DYLIB_DIR/Library/MobileSubstrate/DynamicLibraries/M3gaSignalBars.dylib"
@@ -91,7 +90,7 @@ jobs:
       - name: Upload test Debian package
         uses: actions/upload-artifact@v4
         with:
-          name: M3gaSignalBars-0.1.0-deb
+          name: M3gaSignalBars-0.1.1-deb
           path: M3gaSignalBars/packages/*.deb
           if-no-files-found: error
           retention-days: 14
