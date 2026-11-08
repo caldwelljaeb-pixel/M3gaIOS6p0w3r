@@ -102,6 +102,7 @@ jobs:
           test -n "$DEB"
           dpkg-deb --info "$DEB"
           dpkg-deb --contents "$DEB"
+          python3 M3gaGravity/Tests/verify_preferences.py "$DEB"
 
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
