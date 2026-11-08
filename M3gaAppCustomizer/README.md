@@ -1,4 +1,4 @@
-# M3gaAppCustomizer 0.1.0
+# M3gaAppCustomizer 0.1.2
 
 A classic iOS app-name and app-image customization tweak for jailbroken iOS 6 devices.
 
@@ -11,4 +11,4 @@ The Settings bundle scans built-in app bundles in `/Applications` and downloaded
 Preferences are stored in `/var/mobile/Library/Preferences/com.m3ga.appcustomizer.plist`.
 Custom PNG files are stored in `/var/mobile/Library/M3gaAppCustomizer/Icons/<bundle-id>.png`.
 
-This is an initial test build. The package must be tested on an actual iOS 6 device before runtime behavior is considered verified. The build workflow does not publish to the main Cydia repository.
+This is a test build. The package must be tested on an actual iOS 6 device before runtime behavior is considered verified. The build workflow does not publish to the main Cydia repository.
