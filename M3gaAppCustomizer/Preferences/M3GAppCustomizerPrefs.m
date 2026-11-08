@@ -33,6 +33,12 @@ static NSDictionary *M3GAReadPreferences(void) {
 static void M3GAPostChanged(void) {
     CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), M3GAChangedNotification, NULL, NULL, YES);
 }
+static NSString *M3GAIconPathForBundleIdentifier(NSString *bundleID) {
+    if (![bundleID isKindOfClass:[NSString class]] || bundleID.length == 0) return nil;
+    NSCharacterSet *allowed = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
+    if ([bundleID rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) return nil;
+    return [M3GAIconsPath stringByAppendingPathComponent:[bundleID stringByAppendingPathExtension:@"png"]];
+}
 static void M3GAAddAppsFromDirectory(NSString *directory,
                                      NSMutableDictionary *appsByID) {
     NSFileManager *manager = [NSFileManager defaultManager];
@@ -122,7 +128,10 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 }
 @end
 
-@interface M3GAppsController : PSListController
+@interface M3GAppsController : PSListController <UIAlertViewDelegate> {
+    NSString *_pendingResetBundleIdentifier;
+}
+- (void)resetAppCustomization:(PSSpecifier *)specifier;
 @end
 @interface M3GNamesController : M3GAppsController
 - (id)nameForSpecifier:(PSSpecifier *)specifier;
@@ -162,6 +171,13 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         [specifier setProperty:bundleID forKey:@"M3GBundleID"];
         [specifier setProperty:@YES forKey:@"enabled"];
         [items addObject:specifier];
+
+        PSSpecifier *reset = [PSSpecifier preferenceSpecifierNamed:[NSString stringWithFormat:@"Reset %@", name]
+            target:self set:NULL get:NULL detail:Nil cell:buttonCell edit:Nil];
+        [reset setProperty:bundleID forKey:@"M3GBundleID"];
+        [reset setProperty:NSStringFromSelector(@selector(resetAppCustomization:)) forKey:@"action"];
+        [reset setButtonAction:@selector(resetAppCustomization:)];
+        [items addObject:reset];
     }
     if (apps.count == 0) {
         PSSpecifier *empty = [PSSpecifier preferenceSpecifierNamed:@"No installed apps were found" target:self
@@ -171,6 +187,70 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     [self setSpecifiers:items];
     objc_setAssociatedObject(self, &M3GAAppSpecifiersKey, items, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return items;
+}
+- (void)resetAppCustomization:(PSSpecifier *)specifier {
+    NSString *bundleID = [specifier propertyForKey:@"M3GBundleID"];
+    if (![bundleID isKindOfClass:[NSString class]] || bundleID.length == 0) return;
+
+    [_pendingResetBundleIdentifier release];
+    _pendingResetBundleIdentifier = [bundleID copy];
+
+    NSString *appName = [specifier name];
+    if (![appName isKindOfClass:[NSString class]] || appName.length == 0)
+        appName = bundleID;
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Reset App Customization?"
+        message:[NSString stringWithFormat:@"Restore %@ to its original name and picture?", appName]
+        delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Reset", nil];
+    alert.tag = 1303;
+    [alert show];
+    [alert release];
+}
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (alertView.tag != 1303) return;
+
+    if (buttonIndex == 1 && _pendingResetBundleIdentifier.length > 0) {
+        NSMutableDictionary *prefs = M3GAMutablePreferences();
+        id storedNames = [prefs objectForKey:@"Names"];
+        NSMutableDictionary *names = [storedNames isKindOfClass:[NSDictionary class]]
+            ? [storedNames mutableCopy] : [NSMutableDictionary dictionary];
+        [names removeObjectForKey:_pendingResetBundleIdentifier];
+        if (names.count > 0) [prefs setObject:names forKey:@"Names"];
+        else [prefs removeObjectForKey:@"Names"];
+
+        BOOL saved = [prefs writeToFile:M3GAPreferencesPath atomically:YES];
+        [names release];
+        [prefs release];
+
+        if (saved) {
+            NSString *iconPath = M3GAIconPathForBundleIdentifier(_pendingResetBundleIdentifier);
+            NSFileManager *manager = [NSFileManager defaultManager];
+            NSError *error = nil;
+            if (iconPath && [manager fileExistsAtPath:iconPath] &&
+                ![manager removeItemAtPath:iconPath error:&error]) {
+                UIAlertView *failure = [[UIAlertView alloc] initWithTitle:@"Icon Reset Incomplete"
+                    message:@"The original name was restored, but the saved picture could not be removed. Please try again."
+                    delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [failure show];
+                [failure release];
+            }
+            M3GAPostChanged();
+            if ([self.view isKindOfClass:[UITableView class]])
+                [(UITableView *)self.view reloadData];
+        } else {
+            UIAlertView *failure = [[UIAlertView alloc] initWithTitle:@"Reset Failed"
+                message:@"The settings file could not be saved. No changes were made."
+                delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [failure show];
+            [failure release];
+        }
+    }
+
+    [_pendingResetBundleIdentifier release];
+    _pendingResetBundleIdentifier = nil;
+}
+- (void)dealloc {
+    [_pendingResetBundleIdentifier release];
+    [super dealloc];
 }
 @end
 
@@ -219,15 +299,14 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     if (![image isKindOfClass:[UIImage class]]) image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (image && _selectedBundleIdentifier.length > 0) {
         CGSize target = CGSizeMake(57.0, 57.0);
-        CGFloat aspect = image.size.width / MAX(image.size.height, 1.0);
-        CGRect drawRect;
-        if (aspect > 1.0) {
-            CGFloat width = target.width * aspect;
-            drawRect = CGRectMake((target.width - width) * 0.5, 0, width, target.height);
-        } else {
-            CGFloat height = target.height / MAX(aspect, 0.01);
-            drawRect = CGRectMake(0, (target.height - height) * 0.5, target.width, height);
-        }
+        CGFloat inset = 5.0;
+        CGSize available = CGSizeMake(target.width - (2.0 * inset), target.height - (2.0 * inset));
+        CGFloat scale = MIN(available.width / MAX(image.size.width, 1.0),
+                            available.height / MAX(image.size.height, 1.0));
+        CGSize fitted = CGSizeMake(image.size.width * scale, image.size.height * scale);
+        CGRect drawRect = CGRectMake((target.width - fitted.width) * 0.5,
+                                     (target.height - fitted.height) * 0.5,
+                                     fitted.width, fitted.height);
         UIGraphicsBeginImageContextWithOptions(target, NO, 2.0);
         [image drawInRect:drawRect];
         UIImage *square = UIGraphicsGetImageFromCurrentImageContext();
