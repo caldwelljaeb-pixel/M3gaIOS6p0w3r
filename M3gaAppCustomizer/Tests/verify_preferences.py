@@ -13,7 +13,7 @@ if not deb.is_file():
 control = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Package"], text=True).strip()
 version = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Version"], text=True).strip()
 arch = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Architecture"], text=True).strip()
-assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.5", "iphoneos-arm")
+assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.6", "iphoneos-arm")
 
 with tempfile.TemporaryDirectory() as temp:
     root = Path(temp)
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory() as temp:
     assert prefs_binary.exists()
     tweak_source = Path("M3gaAppCustomizer/Tweak.x").read_text(encoding="utf-8")
     assert "%hook SBApplicationIcon" in tweak_source, "App label and icon hooks must target SBApplicationIcon"
-    assert "M3gaAppCustomizer 0.1.5" in root_text, "Settings footer must show package version 0.1.5"
+    assert "M3gaAppCustomizer 0.1.6" in root_text, "Settings footer must show package version 0.1.6"
     assert "M3GAAppCustomizerNamesController" in root_text, "Names controller must be namespaced"
     assert "M3GAAppCustomizerImagesController" in root_text, "Image controller must be namespaced"
 
