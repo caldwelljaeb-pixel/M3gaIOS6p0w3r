@@ -133,79 +133,10 @@ jobs:
 
           dpkg-scanpackages --multiversion debs /dev/null | sed 's|^Filename: debs/|Filename: ./debs/|' > Packages
           gzip -n -9c Packages > Packages.gz
-          grep -q '^Package: com.m3ga.m3gagravity    runs-on: ubuntu-22.04
-    needs: build
-    if: always()
-    steps:
-      - name: Publish build status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const succeeded = "${{ needs.build.result }}" === "success";
-            const sha = context.payload.pull_request
-              ? context.payload.pull_request.head.sha
-              : context.sha;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha,
-              state: succeeded ? "success" : "failure",
-              context: "m3gagravity/build",
-              description: succeeded
-                ? "ARMv7 Debian package built and verified"
-                : "Build failed; inspect the Actions logs",
-              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            });
- Packages
-          grep -q '^Version: 0.2.15    runs-on: ubuntu-22.04
-    needs: build
-    if: always()
-    steps:
-      - name: Publish build status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const succeeded = "${{ needs.build.result }}" === "success";
-            const sha = context.payload.pull_request
-              ? context.payload.pull_request.head.sha
-              : context.sha;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha,
-              state: succeeded ? "success" : "failure",
-              context: "m3gagravity/build",
-              description: succeeded
-                ? "ARMv7 Debian package built and verified"
-                : "Build failed; inspect the Actions logs",
-              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            });
- Packages
-          grep -q '^Filename: ./debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb    runs-on: ubuntu-22.04
-    needs: build
-    if: always()
-    steps:
-      - name: Publish build status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const succeeded = "${{ needs.build.result }}" === "success";
-            const sha = context.payload.pull_request
-              ? context.payload.pull_request.head.sha
-              : context.sha;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha,
-              state: succeeded ? "success" : "failure",
-              context: "m3gagravity/build",
-              description: succeeded
-                ? "ARMv7 Debian package built and verified"
-                : "Build failed; inspect the Actions logs",
-              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            });
- Packages
-          grep -Fq 'Hold an app icon briefly, then move your finger' Packages
+          grep -F 'Package: com.m3ga.m3gagravity' Packages
+          grep -F 'Version: 0.2.15' Packages
+          grep -F 'Filename: ./debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb' Packages
+          grep -F 'Hold an app icon briefly, then move your finger' Packages
 
           printf 'Origin: M3gaIOS6p0w3r\nLabel: M3gaIOS6p0w3r\nSuite: stable\nCodename: stable\nArchitectures: iphoneos-arm\nComponents: main\nDescription: Classic iOS jailbreak tweaks, themes, and utilities.\n\nMD5Sum:\n' > Release
           for FILE in Packages Packages.gz; do
