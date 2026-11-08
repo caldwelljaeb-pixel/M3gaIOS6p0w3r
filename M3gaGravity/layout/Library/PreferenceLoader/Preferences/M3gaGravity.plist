@@ -29,7 +29,7 @@
             <key>key</key>
             <string>Enabled</string>
             <key>default</key>
-            <true/>
+            <false/>
             <key>PostNotification</key>
             <string>com.m3ga.m3gagravity/preferences.changed</string>
         </dict>
@@ -43,7 +43,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Icons fall under gravity, collide, and pile up. Touch and drag an icon, then release to fling it. Starts automatically on the Home Screen. Switch Enable Gravity off to restore the original icon positions.</string>
+            <string>Enable Gravity to make icons fall, collide, and pile up. Hold an icon briefly to pick it up, drag it, and release to fling it. Normal page swipes remain available. Gravity is OFF by default.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -67,13 +67,13 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Version 0.2.6</string>
+            <string>Version 0.2.7</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>Experimental icon physics for iOS 6. No accelerometer input is used. Gravity starts automatically.</string>
+            <string>Experimental icon physics for iOS 6. No accelerometer input is used. Gravity is OFF by default.</string>
         </dict>
     </array>
 </dict>
