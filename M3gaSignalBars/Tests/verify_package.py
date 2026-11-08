@@ -13,7 +13,7 @@ def field(name):
     ).strip()
 
 assert field("Package") == "com.m3ga.m3gasignalbars"
-assert field("Version") == "0.1.2"
+assert field("Version") == "0.1.3"
 assert field("Architecture") == "iphoneos-arm"
 
 with tempfile.TemporaryDirectory() as temp:
@@ -35,7 +35,7 @@ with tempfile.TemporaryDirectory() as temp:
 
     with filter_plist.open("rb") as stream:
         target_filter = plistlib.load(stream)
-    assert target_filter["Filter"]["Bundles"] == ["com.apple.UIKit"]
+    assert target_filter["Filter"]["Bundles"] == ["com.apple.springboard", "com.apple.UIKit"]
 
     with loader_plist.open("rb") as stream:
         loader = plistlib.load(stream)
