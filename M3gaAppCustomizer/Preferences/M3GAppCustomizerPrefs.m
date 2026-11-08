@@ -12,83 +12,6 @@
 - (void)setProperty:(id)value forKey:(NSString *)key;
 - (id)propertyForKey:(NSString *)key;
 - (void)setButtonAction:(SEL)action;
-- (id)target;
-@end
-@protocol PreferencesTableCustomView <NSObject>
-- (id)initWithSpecifier:(PSSpecifier *)specifier;
-- (CGFloat)preferredHeightForWidth:(CGFloat)width;
-@end
-@interface PSTableCell : UITableViewCell
-+ (NSInteger)cellTypeFromString:(NSString *)name;
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier;
-@end
-@interface M3GAAppCustomizerBaseController : PSListController
-- (NSString *)plistName;
-- (NSString *)paneTitle;
-@end
-
-static const void *M3GAAppSpecifiersKey = &M3GAAppSpecifiersKey;
-static NSString * const M3GAPreferencesPath = @"/var/mobile/Library/Preferences/com.m3ga.appcustomizer.plist";
-static NSString * const M3GAIconsPath = @"/var/mobile/Library/M3gaAppCustomizer/Icons";
-static CFStringRef const M3GAChangedNotification = CFSTR("com.m3ga.appcustomizer/preferences.changed");
-
-static NSDictionary *M3GAReadPreferences(void) {
-    NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:M3GAPreferencesPath];
-    return [prefs isKindOfClass:[NSDictionary class]] ? prefs : [NSDictionary dictionary];
-}
-static void M3GAPostChanged(void) {
-    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), M3GAChangedNotification, NULL, NULL, YES);
-}
-static NSString *M3GAIconPathForBundleIdentifier(NSString *bundleID) {
-    if (![bundleID isKindOfClass:[NSString class]] || bundleID.length == 0) return nil;
-    NSCharacterSet *allowed = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
-    if ([bundleID rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) return nil;
-    return [M3GAIconsPath stringByAppendingPathComponent:[bundleID stringByAppendingPathExtension:@"png"]];
-}
-
-@interface M3GAAppCustomizerResetButtonCell : PSTableCell <PreferencesTableCustomView> {
-    UIButton *_resetButton;
-    PSSpecifier *_resetSpecifier;
-}
-@end
-@implementation M3GAAppCustomizerResetButtonCell
-- (id)initWithSpecifier:(PSSpecifier *)specifier {
-    self = [super initWithStyle:UITableViewCellStyleDefault
-                reuseIdentifier:@"M3GAAppCustomizerResetButtonCell"
-                      specifier:specifier];
-    if (self) {
-        _resetSpecifier = [specifier retain];
-        self.selectionStyle = UITableViewCellSelectionStyleNone;
-        self.backgroundColor = [UIColor clearColor];
-        _resetButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
-        [_resetButton setAccessibilityLabel:@"Reset this app's custom name and picture"];
-        [_resetButton addTarget:self action:@selector(m3gaResetButtonPressed:)
-               forControlEvents:UIControlEventTouchUpInside];
-        [self.contentView addSubview:_resetButton];
-    }
-    return self;
-}
-- (CGFloat)preferredHeightForWidth:(CGFloat)width { return 48.0; }
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    CGFloat buttonWidth = MIN(112.0, MAX(88.0, self.contentView.bounds.size.width - 36.0));
-    CGFloat buttonHeight = 32.0;
-    _resetButton.frame = CGRectMake((self.contentView.bounds.size.width - buttonWidth) * 0.5,
-                                    (self.contentView.bounds.size.height - buttonHeight) * 0.5,
-                                    buttonWidth, buttonHeight);
-}
-- (void)m3gaResetButtonPressed:(id)sender {
-    NSString *actionName = [_resetSpecifier propertyForKey:@"action"];
-    SEL action = [actionName isKindOfClass:[NSString class]] ? NSSelectorFromString(actionName) : NULL;
-    id target = [_resetSpecifier target];
-    if (target && action && [target respondsToSelector:action])
-        ((void (*)(id, SEL, id))objc_msgSend)(target, action, _resetSpecifier);
-}
-- (void)dealloc {
-    [_resetSpecifier release];
-    [super dealloc];
-}
 @end
 static void M3GAAddAppsFromDirectory(NSString *directory,
                                      NSMutableDictionary *appsByID) {
@@ -225,8 +148,6 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 
         PSSpecifier *reset = [PSSpecifier preferenceSpecifierNamed:@"Reset"
             target:self set:NULL get:NULL detail:Nil cell:buttonCell edit:Nil];
-        [reset setProperty:@"M3GAAppCustomizerResetButtonCell" forKey:@"cellClass"];
-        [reset setProperty:@48.0 forKey:@"height"];
         [reset setProperty:bundleID forKey:@"M3GBundleID"];
         [reset setProperty:name forKey:@"M3GAppName"];
         [reset setProperty:NSStringFromSelector(@selector(resetAppCustomization:)) forKey:@"action"];
