@@ -79,7 +79,8 @@ static char M3GLoadedSpecifiersKey;
     return @"M3gaGravity";
 }
 
-/* PSButtonCell sends its configured action selector to this pane controller. */
+/* PSButtonCell sends its configured action selector to this pane controller.
+ * Keep this action on the root controller loaded by PreferenceLoader. */
 - (void)openCreatorWebsite:(id)specifier {
     NSURL *websiteURL = [NSURL URLWithString:@"https://github.com/caldwelljaeb-pixel"];
     BOOL opened = websiteURL && [[UIApplication sharedApplication] openURL:websiteURL];
