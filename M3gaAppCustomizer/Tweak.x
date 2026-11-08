@@ -79,7 +79,16 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
 - (id)generateIconImage:(int)format {
     NSString *bundleIdentifier = M3GABundleIdentifier(self);
     NSString *path = M3GASafeIconPath(bundleIdentifier);
-    UIImage *customImage = path ? [UIImage imageWithContentsOfFile:path] : nil;
+    UIImage *storedImage = path ? [UIImage imageWithContentsOfFile:path] : nil;
+    UIImage *customImage = nil;
+    if (storedImage.CGImage) {
+        size_t pixelWidth = CGImageGetWidth(storedImage.CGImage);
+        size_t pixelHeight = CGImageGetHeight(storedImage.CGImage);
+        CGFloat imageScale = (pixelWidth >= 100 && pixelHeight >= 100) ? 2.0 : 1.0;
+        customImage = [UIImage imageWithCGImage:storedImage.CGImage
+                                          scale:imageScale
+                                    orientation:UIImageOrientationUp];
+    }
     if (customImage) return customImage;
     return %orig;
 }
