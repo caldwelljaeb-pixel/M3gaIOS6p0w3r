@@ -1,8 +1,8 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.7
+Version: 0.2.8
 Architecture: iphoneos-arm
-Description: GraviBoard-style icon physics with off-screen page optimization and touch fling for iOS 6.
+Description: Fix SpringBoard page scrolling, throttle heap physics, and preserve touch fling on iOS 6.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks
