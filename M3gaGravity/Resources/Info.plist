@@ -13,14 +13,14 @@
     <key>CFBundlePackageType</key>
     <string>BNDL</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.2.13</string>
+    <string>0.2.14</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>0.2.13</string>
+    <string>0.2.14</string>
     <key>MinimumOSVersion</key>
     <string>6.0</string>
     <key>NSPrincipalClass</key>
-    <string>M3GInstructionsController</string>
+    <string>M3GRootController</string>
 </dict>
 </plist>
