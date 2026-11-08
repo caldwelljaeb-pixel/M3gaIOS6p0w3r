@@ -1,5 +1,6 @@
-#import <Preferences/PSListController.h>
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <Preferences/PSListController.h>
 
 @interface M3GInstructionsController : PSListController
 @end
