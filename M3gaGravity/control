@@ -1,6 +1,6 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.2
+Version: 0.2.3
 Architecture: iphoneos-arm
 Description: Tilt-controlled icon physics with bouncing and collisions for iOS 6 SpringBoard.
 Maintainer: M3gaIOS6p0w3r
