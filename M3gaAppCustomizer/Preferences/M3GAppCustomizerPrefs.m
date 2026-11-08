@@ -37,37 +37,52 @@ static NSString *M3GAStringForProxy(id proxy, SEL selector) {
     id value = ((id (*)(id, SEL))objc_msgSend)(proxy, selector);
     return [value isKindOfClass:[NSString class]] ? value : nil;
 }
+static void M3GAAddAppsFromDirectory(NSString *directory,
+                                     NSMutableDictionary *appsByID) {
+    NSFileManager *manager = [NSFileManager defaultManager];
+    NSArray *children = [manager contentsOfDirectoryAtPath:directory error:nil];
+    for (NSString *child in children) {
+        NSString *childPath = [directory stringByAppendingPathComponent:child];
+        BOOL isDirectory = NO;
+        if (![manager fileExistsAtPath:childPath isDirectory:&isDirectory] || !isDirectory)
+            continue;
+
+        if ([[childPath pathExtension] caseInsensitiveCompare:@"app"] == NSOrderedSame) {
+            NSString *infoPath = [childPath stringByAppendingPathComponent:@"Info.plist"];
+            NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:infoPath];
+            NSString *bundleID = [info objectForKey:@"CFBundleIdentifier"];
+            NSString *name = [info objectForKey:@"CFBundleDisplayName"];
+            if (![name isKindOfClass:[NSString class]] || name.length == 0)
+                name = [info objectForKey:@"CFBundleName"];
+            if (![name isKindOfClass:[NSString class]] || name.length == 0)
+                name = bundleID;
+            if ([bundleID isKindOfClass:[NSString class]] && bundleID.length > 0 &&
+                [name isKindOfClass:[NSString class]] && name.length > 0) {
+                [appsByID setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                    bundleID, @"bundleID", name, @"name", nil] forKey:bundleID];
+            }
+            continue;
+        }
+
+        // iOS 6 stores App Store apps one directory below a UUID folder.
+        // Only inspect the next level; do not recurse into app bundles/frameworks.
+        if ([directory isEqualToString:@"/var/mobile/Applications"])
+            M3GAAddAppsFromDirectory(childPath, appsByID);
+    }
+}
+
 static NSArray *M3GAInstalledApps(void) {
     NSMutableDictionary *appsByID = [NSMutableDictionary dictionary];
-    Class workspaceClass = objc_getClass("LSApplicationWorkspace");
-    Class proxyClass = objc_getClass("LSApplicationProxy");
-    if (workspaceClass && proxyClass) {
-        id workspace = ((id (*)(id, SEL))objc_msgSend)(workspaceClass, @selector(defaultWorkspace));
-        NSArray *identifiers = nil;
-        SEL installedSelector = @selector(installedApplications);
-        if ([workspace respondsToSelector:installedSelector])
-            identifiers = ((id (*)(id, SEL))objc_msgSend)(workspace, installedSelector);
-        for (id identifier in identifiers) {
-            if (![identifier isKindOfClass:[NSString class]]) continue;
-            id proxy = ((id (*)(id, SEL, id))objc_msgSend)(proxyClass, @selector(applicationProxyForIdentifier:), identifier);
-            NSString *name = M3GAStringForProxy(proxy, @selector(localizedName));
-            NSURL *bundleURL = nil;
-            if ([proxy respondsToSelector:@selector(bundleURL)])
-                bundleURL = ((id (*)(id, SEL))objc_msgSend)(proxy, @selector(bundleURL));
-            NSString *path = [bundleURL isKindOfClass:[NSURL class]] ? [bundleURL path] : nil;
-            NSDictionary *info = path ? [NSDictionary dictionaryWithContentsOfFile:[path stringByAppendingPathComponent:@"Info.plist"]] : nil;
-            if (name.length == 0) name = [info objectForKey:@"CFBundleDisplayName"];
-            if (name.length == 0) name = [info objectForKey:@"CFBundleName"];
-            if (name.length == 0) name = identifier;
-            if ([(NSString *)identifier length] > 0 && name.length > 0)
-                [appsByID setObject:@{@"bundleID":identifier, @"name":name} forKey:identifier];
-        }
-    }
-    NSArray *sorted = [[appsByID allValues] sortedArrayUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
-        return [[a objectForKey:@"name"] localizedCaseInsensitiveCompare:[b objectForKey:@"name"]];
-    }];
+    M3GAAddAppsFromDirectory(@"/Applications", appsByID);
+    M3GAAddAppsFromDirectory(@"/var/mobile/Applications", appsByID);
+
+    NSArray *sorted = [[appsByID allValues] sortedArrayUsingComparator:
+        ^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
+            return [[a objectForKey:@"name"] localizedCaseInsensitiveCompare:[b objectForKey:@"name"]];
+        }];
     return sorted ? sorted : [NSArray array];
 }
+
 static NSMutableDictionary *M3GAMutablePreferences(void) {
     NSDictionary *existing = M3GAReadPreferences();
     return existing ? [existing mutableCopy] : [NSMutableDictionary dictionary];
