@@ -152,8 +152,8 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         UILongPressGestureRecognizer *drag =
             [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleIconPan:)];
         drag.delegate = self;
-        drag.minimumPressDuration = 0.18;
-        drag.allowableMovement = 10.0;
+        drag.minimumPressDuration = 0.22;
+        drag.allowableMovement = 16.0;
         drag.cancelsTouchesInView = YES;
         drag.delaysTouchesBegan = NO;
         drag.delaysTouchesEnded = NO;
@@ -163,6 +163,24 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         // A normal page swipe moves before the long-press can begin.
         objc_setAssociatedObject(view, M3GPanKey, drag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
+}
+
+- (void)rearmDragRecognizerForView:(UIView *)view
+                        recognizer:(UILongPressGestureRecognizer *)recognizer {
+    if (!view || !recognizer) return;
+
+    // Recreate the pickup recognizer after each completed/cancelled gesture.
+    // This avoids leaving SpringBoard's reused icon views with a stale
+    // long-press state after page transitions or a fling.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [view removeGestureRecognizer:recognizer];
+        if (objc_getAssociatedObject(view, M3GPanKey) == recognizer) {
+            objc_setAssociatedObject(view, M3GPanKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+        if (self.enabled && view.window) {
+            [self registerIconView:view];
+        }
+    });
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -198,6 +216,10 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         case UIGestureRecognizerStateBegan:
             motion.dragging = YES;
             motion.velocity = CGPointZero;
+            // The 16-point movement allowance only distinguishes a pickup
+            // from a page swipe before recognition. Once picked up, allow a
+            // full drag without the long-press recognizer timing out.
+            pan.allowableMovement = CGFLOAT_MAX;
             motion.lastDragLocation = [pan locationInView:view.superview];
             motion.lastDragTimestamp = CACurrentMediaTime();
             break;
@@ -235,6 +257,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
             motion.velocity = CGPointMake(motion.velocity.x * 0.90,
                                           motion.velocity.y * 0.90);
             motion.dragging = NO;
+            [self rearmDragRecognizerForView:view recognizer:pan];
             break;
         }
 
@@ -242,6 +265,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         case UIGestureRecognizerStateFailed:
             motion.dragging = NO;
             // A cancelled drag simply resumes falling from its current position.
+            [self rearmDragRecognizerForView:view recognizer:pan];
             break;
 
         default:
