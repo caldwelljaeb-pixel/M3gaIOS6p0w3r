@@ -12,11 +12,17 @@
 - (void)setProperty:(id)value forKey:(NSString *)key;
 - (id)propertyForKey:(NSString *)key;
 - (void)setButtonAction:(SEL)action;
+- (id)target;
+@end
+@protocol PreferencesTableCustomView <NSObject>
+- (id)initWithSpecifier:(PSSpecifier *)specifier;
+- (CGFloat)preferredHeightForWidth:(CGFloat)width;
 @end
 @interface PSTableCell : UITableViewCell
 + (NSInteger)cellTypeFromString:(NSString *)name;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier;
 @end
-@interface M3GBaseController : PSListController
+@interface M3GAAppCustomizerBaseController : PSListController
 - (NSString *)plistName;
 - (NSString *)paneTitle;
 @end
@@ -39,6 +45,51 @@ static NSString *M3GAIconPathForBundleIdentifier(NSString *bundleID) {
     if ([bundleID rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) return nil;
     return [M3GAIconsPath stringByAppendingPathComponent:[bundleID stringByAppendingPathExtension:@"png"]];
 }
+
+@interface M3GAAppCustomizerResetButtonCell : PSTableCell <PreferencesTableCustomView> {
+    UIButton *_resetButton;
+    PSSpecifier *_resetSpecifier;
+}
+@end
+@implementation M3GAAppCustomizerResetButtonCell
+- (id)initWithSpecifier:(PSSpecifier *)specifier {
+    self = [super initWithStyle:UITableViewCellStyleDefault
+                reuseIdentifier:@"M3GAAppCustomizerResetButtonCell"
+                      specifier:specifier];
+    if (self) {
+        _resetSpecifier = [specifier retain];
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+        self.backgroundColor = [UIColor clearColor];
+        _resetButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
+        [_resetButton setAccessibilityLabel:@"Reset this app's custom name and picture"];
+        [_resetButton addTarget:self action:@selector(m3gaResetButtonPressed:)
+               forControlEvents:UIControlEventTouchUpInside];
+        [self.contentView addSubview:_resetButton];
+    }
+    return self;
+}
+- (CGFloat)preferredHeightForWidth:(CGFloat)width { return 48.0; }
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    CGFloat buttonWidth = MIN(112.0, MAX(88.0, self.contentView.bounds.size.width - 36.0));
+    CGFloat buttonHeight = 32.0;
+    _resetButton.frame = CGRectMake((self.contentView.bounds.size.width - buttonWidth) * 0.5,
+                                    (self.contentView.bounds.size.height - buttonHeight) * 0.5,
+                                    buttonWidth, buttonHeight);
+}
+- (void)m3gaResetButtonPressed:(id)sender {
+    NSString *actionName = [_resetSpecifier propertyForKey:@"action"];
+    SEL action = [actionName isKindOfClass:[NSString class]] ? NSSelectorFromString(actionName) : NULL;
+    id target = [_resetSpecifier target];
+    if (target && action && [target respondsToSelector:action])
+        ((void (*)(id, SEL, id))objc_msgSend)(target, action, _resetSpecifier);
+}
+- (void)dealloc {
+    [_resetSpecifier release];
+    [super dealloc];
+}
+@end
 static void M3GAAddAppsFromDirectory(NSString *directory,
                                      NSMutableDictionary *appsByID) {
     NSFileManager *manager = [NSFileManager defaultManager];
@@ -90,7 +141,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     return existing ? [existing mutableCopy] : [NSMutableDictionary dictionary];
 }
 
-@implementation M3GBaseController
+@implementation M3GAAppCustomizerBaseController
 - (NSBundle *)bundle { return [NSBundle bundleForClass:[self class]]; }
 - (NSArray *)specifiers {
     NSArray *cached = objc_getAssociatedObject(self, &M3GAAppSpecifiersKey);
@@ -112,10 +163,10 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 - (NSString *)paneTitle { return nil; }
 @end
 
-@interface M3GRootController : M3GBaseController
+@interface M3GAAppCustomizerRootController : M3GAAppCustomizerBaseController
 - (void)openCreatorWebsite:(id)specifier;
 @end
-@implementation M3GRootController
+@implementation M3GAAppCustomizerRootController
 - (NSString *)plistName { return @"Root"; }
 - (NSString *)paneTitle { return @"M3gaAppCustomizer"; }
 - (void)openCreatorWebsite:(id)specifier {
@@ -128,16 +179,16 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 }
 @end
 
-@interface M3GAppsController : PSListController <UIAlertViewDelegate> {
+@interface M3GAAppCustomizerAppsController : PSListController <UIAlertViewDelegate> {
     NSString *_pendingResetBundleIdentifier;
 }
 - (void)resetAppCustomization:(PSSpecifier *)specifier;
 @end
-@interface M3GNamesController : M3GAppsController
+@interface M3GAAppCustomizerNamesController : M3GAAppCustomizerAppsController
 - (id)nameForSpecifier:(PSSpecifier *)specifier;
 - (void)setName:(id)value specifier:(PSSpecifier *)specifier;
 @end
-@implementation M3GAppsController
+@implementation M3GAAppCustomizerAppsController
 - (NSBundle *)bundle { return [NSBundle bundleForClass:[self class]]; }
 - (NSArray *)specifiers {
     NSArray *cached = objc_getAssociatedObject(self, &M3GAAppSpecifiersKey);
@@ -146,7 +197,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     NSInteger groupCell = [PSTableCell cellTypeFromString:@"PSGroupCell"];
     NSInteger editCell = [PSTableCell cellTypeFromString:@"PSEditTextCell"];
     NSInteger buttonCell = [PSTableCell cellTypeFromString:@"PSButtonCell"];
-    BOOL isNames = [self isKindOfClass:[M3GNamesController class]];
+    BOOL isNames = [self isKindOfClass:[M3GAAppCustomizerNamesController class]];
     PSSpecifier *group = [PSSpecifier preferenceSpecifierNamed:(isNames ? @"Rename Installed Apps" : @"Choose an App")
         target:self set:NULL get:NULL detail:Nil cell:groupCell edit:Nil];
     [group setProperty:(isNames ? @"Enter a replacement name in the field beside an app. Leave it blank to restore the original name."
@@ -172,8 +223,10 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         [specifier setProperty:@YES forKey:@"enabled"];
         [items addObject:specifier];
 
-        PSSpecifier *reset = [PSSpecifier preferenceSpecifierNamed:[NSString stringWithFormat:@"Reset %@", name]
+        PSSpecifier *reset = [PSSpecifier preferenceSpecifierNamed:@"Reset"
             target:self set:NULL get:NULL detail:Nil cell:buttonCell edit:Nil];
+        [reset setProperty:@"M3GAAppCustomizerResetButtonCell" forKey:@"cellClass"];
+        [reset setProperty:@48.0 forKey:@"height"];
         [reset setProperty:bundleID forKey:@"M3GBundleID"];
         [reset setProperty:name forKey:@"M3GAppName"];
         [reset setProperty:NSStringFromSelector(@selector(resetAppCustomization:)) forKey:@"action"];
@@ -256,7 +309,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 }
 @end
 
-@implementation M3GNamesController
+@implementation M3GAAppCustomizerNamesController
 - (id)nameForSpecifier:(PSSpecifier *)specifier {
     NSString *bundleID = [specifier propertyForKey:@"M3GBundleID"];
     NSString *name = [[M3GAReadPreferences() objectForKey:@"Names"] objectForKey:bundleID];
@@ -276,12 +329,12 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 }
 @end
 
-@interface M3GImagesController : M3GAppsController <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
+@interface M3GAAppCustomizerImagesController : M3GAAppCustomizerAppsController <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
     NSString *_selectedBundleIdentifier;
 }
 - (void)speciferPerformedAction:(PSSpecifier *)specifier;
 @end
-@implementation M3GImagesController
+@implementation M3GAAppCustomizerImagesController
 - (void)speciferPerformedAction:(PSSpecifier *)specifier {
     _selectedBundleIdentifier = [[specifier propertyForKey:@"M3GBundleID"] copy];
     if (_selectedBundleIdentifier.length == 0) return;
@@ -292,13 +345,13 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
     UIImagePickerController *picker = [[UIImagePickerController alloc] init];
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     picker.delegate = self;
-    picker.allowsEditing = YES;
+    picker.allowsEditing = NO;
     [self presentModalViewController:picker animated:YES];
     [picker release];
 }
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
-    if (![image isKindOfClass:[UIImage class]]) image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    if (![image isKindOfClass:[UIImage class]]) image = [info objectForKey:UIImagePickerControllerEditedImage];
     if (image && _selectedBundleIdentifier.length > 0) {
         CGSize target = CGSizeMake(57.0, 57.0);
         CGFloat inset = 5.0;
@@ -313,12 +366,29 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         [image drawInRect:drawRect];
         UIImage *square = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        [[NSFileManager defaultManager] createDirectoryAtPath:M3GAIconsPath withIntermediateDirectories:YES attributes:nil error:nil];
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSError *fileError = nil;
+        BOOL directoryReady = [manager createDirectoryAtPath:M3GAIconsPath
+                                 withIntermediateDirectories:YES
+                                                  attributes:nil
+                                                       error:&fileError];
         NSString *filename = [_selectedBundleIdentifier stringByAppendingPathExtension:@"png"];
         NSString *path = [M3GAIconsPath stringByAppendingPathComponent:filename];
-        NSData *png = UIImagePNGRepresentation(square);
-        if (png) [png writeToFile:path atomically:YES];
-        M3GAPostChanged();
+        NSData *png = square ? UIImagePNGRepresentation(square) : nil;
+        BOOL wroteFile = directoryReady && png &&
+            [png writeToFile:path options:NSDataWritingAtomic error:&fileError] &&
+            [manager fileExistsAtPath:path];
+        if (wroteFile) {
+            M3GAPostChanged();
+        } else {
+            NSString *message = fileError.localizedDescription;
+            if (![message isKindOfClass:[NSString class]] || message.length == 0)
+                message = @"The selected photo could not be converted or saved. Please try another picture.";
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Could Not Save App Icon"
+                message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+        }
     }
     [_selectedBundleIdentifier release]; _selectedBundleIdentifier = nil;
     [self dismissModalViewControllerAnimated:YES];
@@ -333,13 +403,13 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
 }
 @end
 
-@interface M3GInstructionsController : M3GBaseController @end
-@implementation M3GInstructionsController
+@interface M3GAAppCustomizerInstructionsController : M3GAAppCustomizerBaseController @end
+@implementation M3GAAppCustomizerInstructionsController
 - (NSString *)plistName { return @"Instructions"; }
 - (NSString *)paneTitle { return @"Instructions"; }
 @end
-@interface M3GAboutController : M3GBaseController @end
-@implementation M3GAboutController
+@interface M3GAAppCustomizerAboutController : M3GAAppCustomizerBaseController @end
+@implementation M3GAAppCustomizerAboutController
 - (NSString *)plistName { return @"About"; }
 - (NSString *)paneTitle { return @"Info About Me"; }
 @end
