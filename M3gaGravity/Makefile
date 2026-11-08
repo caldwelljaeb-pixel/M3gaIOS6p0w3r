@@ -1,3 +1,4 @@
+# CI uses the iPhoneOS 9.3 device SDK with simulator-only stub architectures removed.
 TARGET := iphone:clang:9.3:6.0
 ARCHS := armv7
 
