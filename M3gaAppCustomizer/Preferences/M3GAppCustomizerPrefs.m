@@ -11,6 +11,7 @@
 + (id)preferenceSpecifierNamed:(NSString *)name target:(id)target set:(SEL)set get:(SEL)get detail:(Class)detail cell:(NSInteger)cell edit:(Class)edit;
 - (void)setProperty:(id)value forKey:(NSString *)key;
 - (id)propertyForKey:(NSString *)key;
+- (void)setButtonAction:(SEL)action;
 @end
 @interface PSTableCell : UITableViewCell
 + (NSInteger)cellTypeFromString:(NSString *)name;
@@ -156,6 +157,7 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         } else {
             specifier = [PSSpecifier preferenceSpecifierNamed:name target:self set:NULL get:NULL detail:Nil cell:buttonCell edit:Nil];
             [specifier setProperty:NSStringFromSelector(@selector(speciferPerformedAction:)) forKey:@"action"];
+            [specifier setButtonAction:@selector(speciferPerformedAction:)];
         }
         [specifier setProperty:bundleID forKey:@"M3GBundleID"];
         [specifier setProperty:@YES forKey:@"enabled"];
