@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>M3gaGravity</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Gravity Physics</string>
+            <key>footerText</key>
+            <string>Gravity is OFF by default. Turn it on when you are ready to let your Home Screen icons fall, collide, and pile up. Turn it off any time to stop the simulation and restore the original icon positions.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>label</key>
+            <string>Enable Gravity</string>
+            <key>defaults</key>
+            <string>com.m3ga.m3gagravity</string>
+            <key>key</key>
+            <string>Enabled</string>
+            <key>default</key>
+            <false/>
+            <key>PostNotification</key>
+            <string>com.m3ga.m3gagravity/preferences.changed</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>label</key>
+            <string>Instructions</string>
+            <key>bundle</key>
+            <string>M3gaGravityPrefs</string>
+            <key>detail</key>
+            <string>M3GInstructionsController</string>
+            <key>isController</key>
+            <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>label</key>
+            <string>Info About Me</string>
+            <key>bundle</key>
+            <string>M3gaGravityPrefs</string>
+            <key>detail</key>
+            <string>M3GAboutController</string>
+            <key>isController</key>
+            <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Website</string>
+            <key>action</key>
+            <string>openCreatorWebsite:</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerText</key>
+            <string>M3gaGravity V1 Prototype. Made with ❤️ by M3gaIOS6p0w3r. Version 0.2.15. Gravity is OFF by default.</string>
+        </dict>
+    </array>
+</dict>
+</plist>
