@@ -121,27 +121,19 @@ jobs:
 
           DEB="$(find M3gaGravity/packages -name '*.deb' -print -quit)"
           test -n "$DEB"
-
-          PACKAGE="$(dpkg-deb -f "$DEB" Package)"
-          VERSION="$(dpkg-deb -f "$DEB" Version)"
-          ARCH="$(dpkg-deb -f "$DEB" Architecture)"
-          test "$PACKAGE" = "com.m3ga.m3gagravity"
-          test "$VERSION" = "0.2.15"
-          test "$ARCH" = "iphoneos-arm"
+          test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.m3gagravity"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.2.15"
+          test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
 
           sudo apt-get update
           sudo apt-get install -y dpkg-dev
           mkdir -p debs
-          DEST="debs/${PACKAGE}_${VERSION}_${ARCH}.deb"
+          DEST="debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb"
           install -m 0644 "$DEB" "$DEST"
 
-          dpkg-scanpackages --multiversion debs /dev/null \
-            | sed 's|^Filename: debs/|Filename: ./debs/|' > Packages
+          dpkg-scanpackages --multiversion debs /dev/null | sed 's|^Filename: debs/|Filename: ./debs/|' > Packages
           gzip -n -9c Packages > Packages.gz
-
-          grep -q '^Package: com.m3ga.m3gagravity
-  report:
-    runs-on: ubuntu-22.04
+          grep -q '^Package: com.m3ga.m3gagravity    runs-on: ubuntu-22.04
     needs: build
     if: always()
     steps:
@@ -165,9 +157,7 @@ jobs:
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
  Packages
-          grep -q '^Version: 0.2.15
-  report:
-    runs-on: ubuntu-22.04
+          grep -q '^Version: 0.2.15    runs-on: ubuntu-22.04
     needs: build
     if: always()
     steps:
@@ -191,9 +181,7 @@ jobs:
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
  Packages
-          grep -q '^Filename: ./debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb
-  report:
-    runs-on: ubuntu-22.04
+          grep -q '^Filename: ./debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb    runs-on: ubuntu-22.04
     needs: build
     if: always()
     steps:
@@ -217,28 +205,16 @@ jobs:
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
  Packages
-          grep -qi 'Hold an app icon briefly, then move your finger' Packages
+          grep -Fq 'Hold an app icon briefly, then move your finger' Packages
 
-          {
-            cat <<'EOF'
-          Origin: M3gaIOS6p0w3r
-          Label: M3gaIOS6p0w3r
-          Suite: stable
-          Codename: stable
-          Architectures: iphoneos-arm
-          Components: main
-          Description: Classic iOS jailbreak tweaks, themes, and utilities.
-
-          MD5Sum:
-          EOF
-            for FILE in Packages Packages.gz; do
-              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
-            done
-            printf '\nSHA256:\n'
-            for FILE in Packages Packages.gz; do
-              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
-            done
-          } > Release
+          printf 'Origin: M3gaIOS6p0w3r\nLabel: M3gaIOS6p0w3r\nSuite: stable\nCodename: stable\nArchitectures: iphoneos-arm\nComponents: main\nDescription: Classic iOS jailbreak tweaks, themes, and utilities.\n\nMD5Sum:\n' > Release
+          for FILE in Packages Packages.gz; do
+            printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+          done >> Release
+          printf '\nSHA256:\n' >> Release
+          for FILE in Packages Packages.gz; do
+            printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+          done >> Release
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -249,7 +225,6 @@ jobs:
           fi
           git commit -m "Publish M3gaGravity 0.2.15 to Cydia repository"
           git push
-
   report:
     runs-on: ubuntu-22.04
     needs: build
