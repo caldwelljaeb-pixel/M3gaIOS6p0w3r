@@ -46,6 +46,8 @@
             <string>M3GInstructionsController</string>
             <key>isController</key>
             <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
         </dict>
         <dict>
             <key>cell</key>
@@ -58,12 +60,14 @@
             <string>M3GAboutController</string>
             <key>isController</key>
             <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>M3gaGravity V1 Prototype. Made with ❤️ by M3gaIOS6p0w3r. Version 0.2.11. Gravity is OFF by default.</string>
+            <string>M3gaGravity V1 Prototype. Made with ❤️ by M3gaIOS6p0w3r. Version 0.2.12. Gravity is OFF by default.</string>
         </dict>
     </array>
 </dict>

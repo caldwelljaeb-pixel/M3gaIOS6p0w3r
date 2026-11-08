@@ -10,9 +10,17 @@
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>label</key>
+            <string>Getting Started</string>
+            <key>footerText</key>
+            <string>M3gaGravity is an experimental Home Screen physics tweak for classic iOS. Open Settings and turn Enable Gravity ON to start. Gravity is OFF by default, so nothing moves until you choose to enable it. You do not need to tilt or shake your iPhone.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
             <string>1. Gravity and Falling</string>
             <key>footerText</key>
-            <string>When Enable Gravity is ON, Home Screen icons are pulled downward by simulated gravity. They accelerate as they fall toward the bottom of their page. The movement is automatic: you do not need to tilt or shake your iPhone. M3gaGravity does not use the accelerometer.</string>
+            <string>When enabled, icons are pulled downward by simulated gravity. They accelerate as they fall toward the bottom of their Home Screen page. The movement is automatic and uses no accelerometer input. Each icon begins falling within its own visible Home Screen container.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -52,7 +60,7 @@
             <key>label</key>
             <string>6. Turning Gravity On or Off</string>
             <key>footerText</key>
-            <string>Gravity is OFF by default, including after a fresh install. Open M3gaGravity in Settings and turn Enable Gravity ON to start the simulation. Turn the switch OFF to stop the simulation and restore icons to their original positions. Your switch selection is saved in the preference file and is read again by SpringBoard.</string>
+            <string>Gravity is OFF by default, including after upgrading to this version. Turn Enable Gravity ON to start the simulation. Turn the switch OFF to stop the simulation and restore icons to their original positions. Your switch selection is saved, and future choices are preserved normally.</string>
         </dict>
     </array>
 </dict>
