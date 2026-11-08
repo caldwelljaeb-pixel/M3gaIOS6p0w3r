@@ -1,0 +1,12 @@
+Package: com.m3ga.m3gasignalbars
+Name: M3gaSignalBars
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Cosmetic full-strength cellular signal bars for classic iOS 6.
+ Enable the tweak to display five native iOS cellular bars. Disable it any
+ time to restore the real signal reading. This changes only the displayed
+ signal-bar count; it does not create cellular service, calls, SMS, or data.
+Maintainer: M3gaIOS6p0w3r
+Author: M3gaIOS6p0w3r
+Section: Tweaks
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
