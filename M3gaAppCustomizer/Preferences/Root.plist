@@ -4,10 +4,10 @@
 <key>title</key><string>M3gaAppCustomizer</string>
 <key>items</key><array>
 <dict><key>cell</key><string>PSGroupCell</string><key>label</key><string>Customize Your Apps</string><key>footerText</key><string>Find installed apps and personalize their Home Screen names and pictures. Names and Image Changing are separate categories.</string></dict>
-<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Names</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GNamesController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
-<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Image Changing</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GImagesController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
-<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Instructions</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GInstructionsController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
-<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Info About Me</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GAboutController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
+<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Names</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GAAppCustomizerNamesController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
+<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Image Changing</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GAAppCustomizerImagesController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
+<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Instructions</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GAAppCustomizerInstructionsController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
+<dict><key>cell</key><string>PSLinkCell</string><key>label</key><string>Info About Me</string><key>bundle</key><string>M3gaAppCustomizerPrefs</string><key>detail</key><string>M3GAAppCustomizerAboutController</string><key>isController</key><true/><key>overridePrincipalClass</key><true/></dict>
 <dict><key>cell</key><string>PSButtonCell</string><key>label</key><string>Website</string><key>action</key><string>openCreatorWebsite:</string></dict>
-<dict><key>cell</key><string>PSGroupCell</string><key>footerText</key><string>M3gaAppCustomizer 0.1.3. Made with ❤️ by M3gaIOS6p0w3r.</string></dict>
+<dict><key>cell</key><string>PSGroupCell</string><key>footerText</key><string>M3gaAppCustomizer 0.1.4. Made with ❤️ by M3gaIOS6p0w3r.</string></dict>
 </array></dict></plist>
