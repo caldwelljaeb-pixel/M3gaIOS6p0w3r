@@ -24,13 +24,39 @@ static const void *M3GPanKey = &M3GPanKey;
 static CFStringRef const M3GPreferencesChanged = CFSTR("com.m3ga.m3gagravity/preferences.changed");
 
 static BOOL M3GReadEnabled(void) {
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:
+    NSDictionary *saved = [NSDictionary dictionaryWithContentsOfFile:
         @"/var/mobile/Library/Preferences/com.m3ga.m3gagravity.plist"];
-    return [[preferences objectForKey:@"Enabled"] boolValue];
+
+    // Upgrade older installs to auto-start once. Thereafter the Settings
+    // switch remains the user's on/off control.
+    if (![[saved objectForKey:@"M3GAutoStartConfigured"] boolValue]) {
+        NSMutableDictionary *updated = saved ? [saved mutableCopy] : [NSMutableDictionary dictionary];
+        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"Enabled"];
+        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"M3GAutoStartConfigured"];
+        [updated writeToFile:@"/var/mobile/Library/Preferences/com.m3ga.m3gagravity.plist" atomically:YES];
+        return YES;
+    }
+
+    id enabled = [saved objectForKey:@"Enabled"];
+    return enabled ? [enabled boolValue] : YES;
 }
 
-static const CGFloat M3GGravityAcceleration = 720.0;
-static const CGFloat M3GMaximumFallSpeed = 1050.0;
+static const CGFloat M3GGravityAcceleration = 760.0;
+static const CGFloat M3GMaximumFallSpeed = 980.0;
+static const CGFloat M3GIconRestitution = 0.10;
+static const CGFloat M3GFloorRestitution = 0.12;
+static const CGFloat M3GCollisionSlop = 0.35;
+static const NSUInteger M3GCollisionIterations = 8;
+
+static CGFloat M3GInitialHorizontalSpeed(void) {
+    // A small sideways impulse makes icons tumble into a heap rather than
+    // all landing in a perfectly straight row.
+    return (CGFloat)((int)arc4random_uniform(111) - 55);
+}
+
+static CGFloat M3GCollisionRadius(UIView *view) {
+    return MIN(CGRectGetWidth(view.bounds), CGRectGetHeight(view.bounds)) * 0.46;
+}
 
 @interface M3GGravityController : NSObject <UIGestureRecognizerDelegate>
 @property(nonatomic, strong) NSHashTable *iconViews;
@@ -98,7 +124,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     } else if (!wasEnabled && self.enabled) {
         for (UIView *view in self.iconViews.allObjects) {
             M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
-            if (motion) motion.velocity = CGPointZero;
+            if (motion) motion.velocity = CGPointMake(M3GInitialHorizontalSpeed(), 0.0);
         }
     }
 }
@@ -112,10 +138,12 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         motion.baseTransform = view.transform;
         objc_setAssociatedObject(view, M3GMotionKey, motion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         [self.iconViews addObject:view];
-        motion.velocity = CGPointZero;
+        motion.velocity = self.enabled
+            ? CGPointMake(M3GInitialHorizontalSpeed(), 0.0)
+            : CGPointZero;
     }
 
-    // A non-cancelling pan recognizer preserves ordinary icon taps. A drag
+    // A drag
     // moves the icon directly; releasing it gives the icon the pan velocity.
     if (!objc_getAssociatedObject(view, M3GPanKey)) {
         UIPanGestureRecognizer *pan =
@@ -128,6 +156,13 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         pan.delaysTouchesBegan = NO;
         pan.delaysTouchesEnded = NO;
         [view addGestureRecognizer:pan];
+
+        // Let the custom pan own a moving icon. A stationary touch still
+        // fails this recognizer, so normal app-launch taps continue to work.
+        for (UIGestureRecognizer *other in view.gestureRecognizers) {
+            if (other != pan) [other requireGestureRecognizerToFail:pan];
+        }
+
         objc_setAssociatedObject(view, M3GPanKey, pan, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 }
@@ -136,13 +171,14 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     if (!self.enabled || !gestureRecognizer.view.superview) return NO;
     CGPoint velocity = [(UIPanGestureRecognizer *)gestureRecognizer
                         velocityInView:gestureRecognizer.view.superview];
-    return hypotf(velocity.x, velocity.y) > 8.0;
+    return hypotf(velocity.x, velocity.y) > 10.0;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
  shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    // Do not block SpringBoard's own icon and page gestures.
-    return YES;
+    // A moving icon belongs to the user's drag rather than a competing
+    // SpringBoard icon-rearrange gesture. Stationary taps still pass.
+    return NO;
 }
 
 - (void)handleIconPan:(UIPanGestureRecognizer *)pan {
@@ -210,25 +246,25 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     if (motion.offset.x < minX) {
         motion.offset = CGPointMake(minX, motion.offset.y);
         if (motion.velocity.x < 0.0)
-            motion.velocity = CGPointMake(fabs(motion.velocity.x) * 0.82, motion.velocity.y);
+            motion.velocity = CGPointMake(fabs(motion.velocity.x) * 0.24, motion.velocity.y);
     } else if (motion.offset.x > maxX) {
         motion.offset = CGPointMake(maxX, motion.offset.y);
         if (motion.velocity.x > 0.0)
-            motion.velocity = CGPointMake(-fabs(motion.velocity.x) * 0.82, motion.velocity.y);
+            motion.velocity = CGPointMake(-fabs(motion.velocity.x) * 0.24, motion.velocity.y);
     }
 
     if (motion.offset.y < minY) {
         motion.offset = CGPointMake(motion.offset.x, minY);
         if (motion.velocity.y < 0.0)
-            motion.velocity = CGPointMake(motion.velocity.x, fabs(motion.velocity.y) * 0.82);
+            motion.velocity = CGPointMake(motion.velocity.x,
+                fabs(motion.velocity.y) * M3GFloorRestitution);
     } else if (motion.offset.y > maxY) {
         motion.offset = CGPointMake(motion.offset.x, maxY);
-        if (motion.velocity.y > 0.0)
-            // The bottom is the floor: a small bounce, then settle instead of
-            // continuously ricocheting around the screen.
+        if (motion.velocity.y > 0.0) {
             CGFloat impact = fabs(motion.velocity.y);
-            CGFloat rebound = impact > 95.0 ? impact * 0.16 : 0.0;
-            motion.velocity = CGPointMake(motion.velocity.x, -rebound);
+            CGFloat rebound = impact > 85.0 ? impact * M3GFloorRestitution : 0.0;
+            motion.velocity = CGPointMake(motion.velocity.x * 0.90, -rebound);
+        }
     }
 }
 
@@ -240,51 +276,87 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 }
 
 - (void)resolveIconCollisions:(NSArray *)views {
-    for (NSUInteger i = 0; i < views.count; i++) {
-        UIView *first = [views objectAtIndex:i];
-        if (!first.superview) continue;
-        M3GIconMotion *a = objc_getAssociatedObject(first, M3GMotionKey);
-        if (!a || a.isDragging) continue;
+    for (NSUInteger pass = 0; pass < M3GCollisionIterations; pass++) {
+        for (NSUInteger i = 0; i < views.count; i++) {
+            UIView *first = [views objectAtIndex:i];
+            if (!first.superview) continue;
+            M3GIconMotion *a = objc_getAssociatedObject(first, M3GMotionKey);
+            if (!a) continue;
 
-        for (NSUInteger j = i + 1; j < views.count; j++) {
-            UIView *second = [views objectAtIndex:j];
-            if (!second.superview || second.superview != first.superview) continue;
-            M3GIconMotion *b = objc_getAssociatedObject(second, M3GMotionKey);
-            if (!b || b.isDragging) continue;
+            for (NSUInteger j = i + 1; j < views.count; j++) {
+                UIView *second = [views objectAtIndex:j];
+                if (!second.superview || second.superview != first.superview) continue;
+                M3GIconMotion *b = objc_getAssociatedObject(second, M3GMotionKey);
+                if (!b) continue;
 
-            CGFloat ax = first.center.x + a.offset.x;
-            CGFloat ay = first.center.y + a.offset.y;
-            CGFloat bx = second.center.x + b.offset.x;
-            CGFloat by = second.center.y + b.offset.y;
-            CGFloat dx = bx - ax;
-            CGFloat dy = by - ay;
-            CGFloat distanceSquared = dx * dx + dy * dy;
+                // A finger-held icon is an immovable obstacle; other icons
+                // can collide with it instead of passing through it.
+                CGFloat inverseMassA = a.isDragging ? 0.0 : 1.0;
+                CGFloat inverseMassB = b.isDragging ? 0.0 : 1.0;
+                CGFloat inverseMassSum = inverseMassA + inverseMassB;
+                if (inverseMassSum <= 0.0) continue;
 
-            CGFloat firstSize = MIN(CGRectGetWidth(first.bounds), CGRectGetHeight(first.bounds));
-            CGFloat secondSize = MIN(CGRectGetWidth(second.bounds), CGRectGetHeight(second.bounds));
-            CGFloat minimumDistance = (firstSize + secondSize) * 0.38;
-            if (distanceSquared >= minimumDistance * minimumDistance) continue;
+                CGFloat dx = (second.center.x + b.offset.x) - (first.center.x + a.offset.x);
+                CGFloat dy = (second.center.y + b.offset.y) - (first.center.y + a.offset.y);
+                CGFloat distanceSquared = dx * dx + dy * dy;
+                CGFloat minimumDistance = M3GCollisionRadius(first) + M3GCollisionRadius(second);
+                if (distanceSquared >= minimumDistance * minimumDistance) continue;
 
-            BOOL centersOverlap = distanceSquared < 0.0001;
-            CGFloat distance = centersOverlap ? 0.01 : sqrtf(distanceSquared);
-            CGFloat nx = centersOverlap ? 1.0 : dx / distance;
-            CGFloat ny = centersOverlap ? 0.0 : dy / distance;
-            CGFloat overlap = minimumDistance - distance;
+                BOOL centersOverlap = distanceSquared < 0.0001;
+                CGFloat distance = centersOverlap ? 0.01 : sqrtf(distanceSquared);
+                CGFloat nx = centersOverlap ? 1.0 : dx / distance;
+                CGFloat ny = centersOverlap ? 0.0 : dy / distance;
+                CGFloat overlap = minimumDistance - distance;
 
-            a.offset = CGPointMake(a.offset.x - nx * overlap * 0.5,
-                                   a.offset.y - ny * overlap * 0.5);
-            b.offset = CGPointMake(b.offset.x + nx * overlap * 0.5,
-                                   b.offset.y + ny * overlap * 0.5);
+                // Iterative positional correction keeps icon circles from
+                // interpenetrating and creates stable piles on the floor.
+                CGFloat correction = MAX(overlap - M3GCollisionSlop, 0.0)
+                    * 0.78 / inverseMassSum;
+                a.offset = CGPointMake(a.offset.x - nx * correction * inverseMassA,
+                                       a.offset.y - ny * correction * inverseMassA);
+                b.offset = CGPointMake(b.offset.x + nx * correction * inverseMassB,
+                                       b.offset.y + ny * correction * inverseMassB);
 
-            CGFloat relativeVelocity = (b.velocity.x - a.velocity.x) * nx +
-                                       (b.velocity.y - a.velocity.y) * ny;
-            if (relativeVelocity < 0.0) {
-                CGFloat impulse = -(1.0 + 0.48) * relativeVelocity * 0.5;
-                a.velocity = CGPointMake(a.velocity.x - impulse * nx,
-                                         a.velocity.y - impulse * ny);
-                b.velocity = CGPointMake(b.velocity.x + impulse * nx,
-                                         b.velocity.y + impulse * ny);
+                CGFloat relativeX = b.velocity.x - a.velocity.x;
+                CGFloat relativeY = b.velocity.y - a.velocity.y;
+                CGFloat normalVelocity = relativeX * nx + relativeY * ny;
+                if (normalVelocity < 0.0) {
+                    CGFloat impulse = -(1.0 + M3GIconRestitution)
+                        * normalVelocity / inverseMassSum;
+                    a.velocity = CGPointMake(a.velocity.x - impulse * nx * inverseMassA,
+                                             a.velocity.y - impulse * ny * inverseMassA);
+                    b.velocity = CGPointMake(b.velocity.x + impulse * nx * inverseMassB,
+                                             b.velocity.y + impulse * ny * inverseMassB);
+
+                    // Friction at contact removes endless sideways sliding.
+                    relativeX = b.velocity.x - a.velocity.x;
+                    relativeY = b.velocity.y - a.velocity.y;
+                    CGFloat normalAfter = relativeX * nx + relativeY * ny;
+                    CGFloat tangentX = relativeX - normalAfter * nx;
+                    CGFloat tangentY = relativeY - normalAfter * ny;
+                    CGFloat tangentLength = hypotf(tangentX, tangentY);
+                    if (tangentLength > 0.001) {
+                        tangentX /= tangentLength;
+                        tangentY /= tangentLength;
+                        CGFloat tangentImpulse = -(relativeX * tangentX + relativeY * tangentY)
+                            / inverseMassSum;
+                        CGFloat maxFriction = impulse * 0.62;
+                        tangentImpulse = MAX(-maxFriction, MIN(maxFriction, tangentImpulse));
+                        a.velocity = CGPointMake(a.velocity.x - tangentImpulse * tangentX * inverseMassA,
+                                                 a.velocity.y - tangentImpulse * tangentY * inverseMassA);
+                        b.velocity = CGPointMake(b.velocity.x + tangentImpulse * tangentX * inverseMassB,
+                                                 b.velocity.y + tangentImpulse * tangentY * inverseMassB);
+                    }
+                }
             }
+        }
+
+        // Reapply walls and floor after every solver pass so the bottom
+        // support remains solid while the heap is being resolved.
+        for (UIView *view in views) {
+            if (!view || !view.superview) continue;
+            M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
+            if (motion && !motion.isDragging) [self applyBoundsToView:view motion:motion];
         }
     }
 }
@@ -306,26 +378,37 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     if (!self.enabled) return;
 
     const CGFloat dt = 1.0 / 60.0;
-    const CGFloat damping = powf(0.999, dt * 60.0);
-    NSArray *views = self.iconViews.allObjects;
+    const CGFloat airDamping = 0.998;
+    NSArray *views = [[self.iconViews allObjects] sortedArrayUsingComparator:^NSComparisonResult(UIView *a, UIView *b) {
+        uintptr_t parentA = (uintptr_t)(__bridge void *)a.superview;
+        uintptr_t parentB = (uintptr_t)(__bridge void *)b.superview;
+        if (parentA < parentB) return NSOrderedAscending;
+        if (parentA > parentB) return NSOrderedDescending;
+        if (a.center.x < b.center.x) return NSOrderedAscending;
+        if (a.center.x > b.center.x) return NSOrderedDescending;
+        if (a.center.y < b.center.y) return NSOrderedAscending;
+        if (a.center.y > b.center.y) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
 
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
         if (!motion || motion.isDragging) continue;
 
-        // Constant downward acceleration creates real falling motion. Icons
-        // naturally come to rest on the bottom edge instead of wandering forever.
-        motion.velocity = CGPointMake(motion.velocity.x * damping,
-            MIN(M3GMaximumFallSpeed, motion.velocity.y + M3GGravityAcceleration * dt));
-
         CGFloat maxY = CGRectGetMaxY(view.superview.bounds)
             - CGRectGetHeight(view.bounds) * 0.5 - view.center.y;
-        BOOL restingOnFloor = motion.offset.y >= maxY - 1.0;
-        if (restingOnFloor) {
-            motion.velocity = CGPointMake(motion.velocity.x * 0.86, motion.velocity.y);
-            if (fabs(motion.velocity.x) < 7.0)
-                motion.velocity = CGPointMake(0.0, motion.velocity.y);
+        BOOL onFloor = motion.offset.y >= maxY - 0.75;
+
+        motion.velocity = CGPointMake(motion.velocity.x * airDamping,
+            MIN(M3GMaximumFallSpeed, motion.velocity.y + M3GGravityAcceleration * dt));
+
+        if (onFloor && motion.velocity.y >= 0.0) {
+            // A landed icon stops accelerating downward and loses horizontal
+            // speed through ground friction until it rests.
+            motion.velocity = CGPointMake(motion.velocity.x * 0.84, 0.0);
+            if (fabs(motion.velocity.x) < 4.0)
+                motion.velocity = CGPointMake(0.0, 0.0);
         }
 
         motion.offset = CGPointMake(motion.offset.x + motion.velocity.x * dt,
@@ -338,8 +421,8 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
-        if (!motion || motion.isDragging) continue;
-        [self applyBoundsToView:view motion:motion];
+        if (!motion) continue;
+        if (!motion.isDragging) [self applyBoundsToView:view motion:motion];
         [self applyTransformToView:view motion:motion];
     }
 }
