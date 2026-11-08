@@ -50,7 +50,9 @@ with tempfile.TemporaryDirectory() as temp:
         with (bundle / name).open("rb") as f:
             plistlib.load(f)
 
-    root_text = (bundle / "Root.plist").read_text(encoding="utf-8")
+    with (bundle / "Root.plist").open("rb") as f:
+        root_data = plistlib.load(f)
+    root_text = repr(root_data)
     assert "Names" in root_text and "Image Changing" in root_text
     assert "Instructions" in root_text and "Info About Me" in root_text
     assert "openCreatorWebsite:" in root_text
