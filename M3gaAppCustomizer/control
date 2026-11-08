@@ -1,6 +1,6 @@
 Package: com.m3ga.appcustomizer
 Name: M3gaAppCustomizer
-Version: 0.1.1
+Version: 0.1.2
 Architecture: iphoneos-arm
 Description: Customize Home Screen app names and icons on classic iOS.
  Detect installed apps, enter a replacement icon label in Names, or choose a
