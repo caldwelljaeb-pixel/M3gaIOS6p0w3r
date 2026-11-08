@@ -14,6 +14,8 @@
 @property(nonatomic, assign) CGAffineTransform baseTransform;
 @property(nonatomic, assign, getter=isDragging) BOOL dragging;
 @property(nonatomic, assign) CGPoint dragOffsetAnchor;
+@property(nonatomic, assign) CGPoint lastDragLocation;
+@property(nonatomic, assign) CFTimeInterval lastDragTimestamp;
 @end
 
 @implementation M3GIconMotion
@@ -27,18 +29,18 @@ static BOOL M3GReadEnabled(void) {
     NSDictionary *saved = [NSDictionary dictionaryWithContentsOfFile:
         @"/var/mobile/Library/Preferences/com.m3ga.m3gagravity.plist"];
 
-    // Upgrade older installs to auto-start once. Thereafter the Settings
-    // switch remains the user's on/off control.
-    if (![[saved objectForKey:@"M3GAutoStartConfigured"] boolValue]) {
+    // Migration from 0.2.6: switch the automatic-start prototype OFF once.
+    // The user can then enable it manually from the existing Settings pane.
+    if (![[saved objectForKey:@"M3GDefaultOffConfigured"] boolValue]) {
         NSMutableDictionary *updated = saved ? [saved mutableCopy] : [NSMutableDictionary dictionary];
-        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"Enabled"];
-        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"M3GAutoStartConfigured"];
+        [updated setObject:[NSNumber numberWithBool:NO] forKey:@"Enabled"];
+        [updated setObject:[NSNumber numberWithBool:YES] forKey:@"M3GDefaultOffConfigured"];
         [updated writeToFile:@"/var/mobile/Library/Preferences/com.m3ga.m3gagravity.plist" atomically:YES];
-        return YES;
+        return NO;
     }
 
     id enabled = [saved objectForKey:@"Enabled"];
-    return enabled ? [enabled boolValue] : YES;
+    return enabled ? [enabled boolValue] : NO;
 }
 
 static const CGFloat M3GGravityAcceleration = 760.0;
@@ -143,35 +145,27 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
             : CGPointZero;
     }
 
-    // A drag
-    // moves the icon directly; releasing it gives the icon the pan velocity.
+    // A short long-press differentiates picking up an icon from a normal
+    // horizontal Home Screen swipe. Quick swipes therefore remain SpringBoard's.
     if (!objc_getAssociatedObject(view, M3GPanKey)) {
-        UIPanGestureRecognizer *pan =
-            [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleIconPan:)];
-        pan.delegate = self;
-        pan.maximumNumberOfTouches = 1;
-        // Once a real drag starts, take ownership of the touch so SpringBoard's
-        // icon/page recognizers cannot steal the drag. Stationary taps still pass.
-        pan.cancelsTouchesInView = YES;
-        pan.delaysTouchesBegan = NO;
-        pan.delaysTouchesEnded = NO;
-        [view addGestureRecognizer:pan];
+        UILongPressGestureRecognizer *drag =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleIconPan:)];
+        drag.delegate = self;
+        drag.minimumPressDuration = 0.18;
+        drag.allowableMovement = 10.0;
+        drag.cancelsTouchesInView = YES;
+        drag.delaysTouchesBegan = NO;
+        drag.delaysTouchesEnded = NO;
+        [view addGestureRecognizer:drag];
 
-        // Let the custom pan own a moving icon. A stationary touch still
-        // fails this recognizer, so normal app-launch taps continue to work.
-        for (UIGestureRecognizer *other in view.gestureRecognizers) {
-            if (other != pan) [other requireGestureRecognizerToFail:pan];
-        }
-
-        objc_setAssociatedObject(view, M3GPanKey, pan, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        // Do not force SpringBoard's built-in recognizers to wait for ours.
+        // A normal page swipe moves before the long-press can begin.
+        objc_setAssociatedObject(view, M3GPanKey, drag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    if (!self.enabled || !gestureRecognizer.view.superview) return NO;
-    CGPoint velocity = [(UIPanGestureRecognizer *)gestureRecognizer
-                        velocityInView:gestureRecognizer.view.superview];
-    return hypotf(velocity.x, velocity.y) > 10.0;
+    return self.enabled && gestureRecognizer.view.superview != nil;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
@@ -181,7 +175,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     return NO;
 }
 
-- (void)handleIconPan:(UIPanGestureRecognizer *)pan {
+- (void)handleIconPan:(UILongPressGestureRecognizer *)pan {
     if (!self.enabled) return;
 
     UIView *view = pan.view;
@@ -198,26 +192,42 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         case UIGestureRecognizerStateBegan:
             motion.dragging = YES;
             motion.velocity = CGPointZero;
-            motion.dragOffsetAnchor = motion.offset;
+            motion.lastDragLocation = [pan locationInView:view.superview];
+            motion.lastDragTimestamp = CACurrentMediaTime();
             break;
 
         case UIGestureRecognizerStateChanged: {
-            CGPoint translation = [pan translationInView:view.superview];
-            motion.offset = CGPointMake(motion.dragOffsetAnchor.x + translation.x,
-                                        motion.dragOffsetAnchor.y + translation.y);
+            CGPoint location = [pan locationInView:view.superview];
+            CFTimeInterval now = CACurrentMediaTime();
+            CFTimeInterval elapsed = now - motion.lastDragTimestamp;
+            CGFloat dx = location.x - motion.lastDragLocation.x;
+            CGFloat dy = location.y - motion.lastDragLocation.y;
+
+            motion.offset = CGPointMake(motion.offset.x + dx,
+                                        motion.offset.y + dy);
+
+            if (elapsed > 0.001) {
+                CGPoint instantVelocity = CGPointMake(dx / elapsed, dy / elapsed);
+                CGFloat speed = hypotf(instantVelocity.x, instantVelocity.y);
+                if (speed > 1050.0) {
+                    CGFloat scale = 1050.0 / speed;
+                    instantVelocity = CGPointMake(instantVelocity.x * scale,
+                                                  instantVelocity.y * scale);
+                }
+                motion.velocity = CGPointMake(motion.velocity.x * 0.35 + instantVelocity.x * 0.65,
+                                              motion.velocity.y * 0.35 + instantVelocity.y * 0.65);
+            }
+
+            motion.lastDragLocation = location;
+            motion.lastDragTimestamp = now;
             [self applyBoundsToView:view motion:motion];
             [self applyTransformToView:view motion:motion];
             break;
         }
 
         case UIGestureRecognizerStateEnded: {
-            CGPoint velocity = [pan velocityInView:view.superview];
-            CGFloat speed = hypotf(velocity.x, velocity.y);
-            if (speed > 1050.0) {
-                CGFloat scale = 1050.0 / speed;
-                velocity = CGPointMake(velocity.x * scale, velocity.y * scale);
-            }
-            motion.velocity = CGPointMake(velocity.x * 0.88, velocity.y * 0.88);
+            motion.velocity = CGPointMake(motion.velocity.x * 0.90,
+                                          motion.velocity.y * 0.90);
             motion.dragging = NO;
             break;
         }
@@ -273,6 +283,29 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     transform.tx += motion.offset.x;
     transform.ty += motion.offset.y;
     view.transform = transform;
+}
+
+- (BOOL)isVisibleForPhysics:(UIView *)view {
+    if (!view || !view.superview || !view.window || view.hidden || view.alpha < 0.02)
+        return NO;
+
+    // A hidden page or a page fully outside the viewport is left untouched.
+    // convertRect includes the page-scroll container's current animation transform.
+    for (UIView *ancestor = view.superview; ancestor && ancestor != view.window;
+         ancestor = ancestor.superview) {
+        if (ancestor.hidden || ancestor.alpha < 0.02) return NO;
+    }
+
+    CGRect frameInWindow = [view convertRect:view.bounds toView:view.window];
+    return CGRectIntersectsRect(frameInWindow, view.window.bounds);
+}
+
+- (NSArray *)visibleIconViews {
+    NSMutableArray *visible = [NSMutableArray array];
+    for (UIView *view in self.iconViews.allObjects) {
+        if ([self isVisibleForPhysics:view]) [visible addObject:view];
+    }
+    return visible;
 }
 
 - (void)resolveIconCollisions:(NSArray *)views {
@@ -379,17 +412,10 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 
     const CGFloat dt = 1.0 / 60.0;
     const CGFloat airDamping = 0.998;
-    NSArray *views = [[self.iconViews allObjects] sortedArrayUsingComparator:^NSComparisonResult(UIView *a, UIView *b) {
-        uintptr_t parentA = (uintptr_t)(__bridge void *)a.superview;
-        uintptr_t parentB = (uintptr_t)(__bridge void *)b.superview;
-        if (parentA < parentB) return NSOrderedAscending;
-        if (parentA > parentB) return NSOrderedDescending;
-        if (a.center.x < b.center.x) return NSOrderedAscending;
-        if (a.center.x > b.center.x) return NSOrderedDescending;
-        if (a.center.y < b.center.y) return NSOrderedAscending;
-        if (a.center.y > b.center.y) return NSOrderedDescending;
-        return NSOrderedSame;
-    }];
+
+    // Only simulate icons currently inside the visible SpringBoard viewport.
+    // Off-screen pages keep their last positions and are simulated when shown.
+    NSArray *views = [self visibleIconViews];
 
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
