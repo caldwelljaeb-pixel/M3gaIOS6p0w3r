@@ -1,8 +1,8 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.5
+Version: 0.2.6
 Architecture: iphoneos-arm
-Description: Downward gravity with floor settling, touch dragging, fling velocity, bouncing and collisions for iOS 6.
+Description: Automatic GraviBoard-style falling heap with precise collisions, touch dragging and fling for iOS 6.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks
