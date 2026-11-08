@@ -1,4 +1,4 @@
-# M3gaAppCustomizer 0.1.5
+# M3gaAppCustomizer 0.1.6
 
 A classic iOS app-name and app-image customization tweak for jailbroken iOS 6 devices.
 
