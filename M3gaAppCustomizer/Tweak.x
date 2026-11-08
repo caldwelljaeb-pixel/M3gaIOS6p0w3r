@@ -67,7 +67,7 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
     M3GARefreshHomeScreen();
 }
 
-%hook SBApplicationIcon
+%hook SBIcon
 - (id)displayName {
     NSString *bundleIdentifier = M3GABundleIdentifier(self);
     NSDictionary *names = [M3GASettings objectForKey:@"Names"];
