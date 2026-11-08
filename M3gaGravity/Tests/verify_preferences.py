@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the installed M3gaGravity 0.2.14 preference bundle inside a built Debian package."""
+"""Verify the installed M3gaGravity 0.2.15 preference bundle inside a built Debian package."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ def main() -> None:
         info = load_plist(bundle / "Info.plist")
         require(info.get("NSPrincipalClass") == "M3GRootController", "bundle principal class must be M3GRootController")
         require(info.get("MinimumOSVersion") == "6.0", "minimum iOS version must remain 6.0")
-        require(info.get("CFBundleShortVersionString") == "0.2.14", "preference bundle version must be 0.2.14")
+        require(info.get("CFBundleShortVersionString") == "0.2.15", "preference bundle version must be 0.2.15")
 
         panes = {}
         for name in ("Root", "Instructions", "About"):
@@ -127,9 +127,9 @@ def main() -> None:
             capture_output=True,
             text=True,
         ).stdout.strip()
-        require(version == "0.2.14", f"expected Debian package version 0.2.14, got {version}")
+        require(version == "0.2.15", f"expected Debian package version 0.2.15, got {version}")
 
-    print("M3gaGravity 0.2.14 preference checks passed.")
+    print("M3gaGravity 0.2.15 preference checks passed.")
     print("- Main pane controller and Website action are present.")
     print("- Root, Instructions, and About panes contain specifiers.")
     print("- Instructions/About have no website text or URLs.")
