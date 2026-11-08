@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the installed M3gaGravity preference bundle inside a built Debian package."""
+"""Verify the installed M3gaGravity 0.2.14 preference bundle inside a built Debian package."""
 
 from __future__ import annotations
 
