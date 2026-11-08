@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>Instructions</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Getting Started</string>
+            <key>footerText</key>
+            <string>Open Settings, select M3gaSignalBars, and turn on Enable Fake Cell Bars. The switch is OFF by default, so the tweak does nothing until you enable it. The status bar should update immediately when the switch changes.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>What You Will See</string>
+            <key>footerText</key>
+            <string>When iOS is displaying its native cellular signal indicator, the tweak asks that indicator to show five full bars. The original iOS 6 signal-bar artwork and layout are retained; no substitute status-bar graphic is drawn over the screen.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Real Signal and Service</string>
+            <key>footerText</key>
+            <string>This is cosmetic only. It does not boost the antenna, change the modem, create a cellular plan, or make calls, texts, or mobile data work. If there is no SIM, no service, or iOS hides the native signal item, there may be no bars to override.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Turning It Off</string>
+            <key>footerText</key>
+            <string>Turn Enable Fake Cell Bars OFF to restore the last real signal value remembered by SpringBoard. If the signal changes while the effect is off, the new real value is used normally.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Compatibility</string>
+            <key>footerText</key>
+            <string>This build targets jailbroken iPhone 4S devices running iOS 6.0 through 6.1.3 (ARMv7). It has not yet been physically tested on your phone, so treat this first package as a test build.</string>
+        </dict>
+    </array>
+</dict>
+</plist>
