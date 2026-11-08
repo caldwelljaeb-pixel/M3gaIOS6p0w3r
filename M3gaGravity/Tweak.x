@@ -3,6 +3,7 @@
 #import <objc/runtime.h>
 #import <math.h>
 #import <dispatch/dispatch.h>
+#import <stdint.h>
 
 @interface SBIconView : UIView
 @end
@@ -11,12 +12,15 @@
 @property(nonatomic, assign) CGPoint offset;
 @property(nonatomic, assign) CGPoint velocity;
 @property(nonatomic, assign) CGAffineTransform baseTransform;
+@property(nonatomic, assign, getter=isDragging) BOOL dragging;
+@property(nonatomic, assign) CGPoint dragOffsetAnchor;
 @end
 
 @implementation M3GIconMotion
 @end
 
 static const void *M3GMotionKey = &M3GMotionKey;
+static const void *M3GPanKey = &M3GPanKey;
 static CFStringRef const M3GPreferencesChanged = CFSTR("com.m3ga.m3gagravity/preferences.changed");
 
 static BOOL M3GReadEnabled(void) {
@@ -25,12 +29,14 @@ static BOOL M3GReadEnabled(void) {
     return [[preferences objectForKey:@"Enabled"] boolValue];
 }
 
-@interface M3GGravityController : NSObject <UIAccelerometerDelegate>
+static CGPoint M3GRandomVelocity(void) {
+    CGFloat angle = ((CGFloat)arc4random() / (CGFloat)UINT32_MAX) * (CGFloat)(M_PI * 2.0);
+    CGFloat speed = 42.0 + ((CGFloat)arc4random_uniform(3900) / 100.0);
+    return CGPointMake(cosf(angle) * speed, sinf(angle) * speed);
+}
+
+@interface M3GGravityController : NSObject <UIGestureRecognizerDelegate>
 @property(nonatomic, strong) NSHashTable *iconViews;
-@property(nonatomic, assign) CGPoint gravity;
-@property(nonatomic, assign) CGFloat baselineX;
-@property(nonatomic, assign) CGFloat baselineY;
-@property(nonatomic, assign) BOOL hasBaseline;
 @property(nonatomic, strong) CADisplayLink *displayLink;
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 + (instancetype)sharedController;
@@ -66,10 +72,6 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         _iconViews = [NSHashTable weakObjectsHashTable];
         _enabled = M3GReadEnabled();
 
-        UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
-        accelerometer.updateInterval = 1.0 / 30.0;
-        accelerometer.delegate = self;
-
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
                                         (__bridge const void *)(self),
                                         M3GPreferencesChangedCallback,
@@ -95,12 +97,12 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     self.enabled = M3GReadEnabled();
 
     if (wasEnabled && !self.enabled) {
-        self.hasBaseline = NO;
         [self restoreAllIcons];
     } else if (!wasEnabled && self.enabled) {
-        // Treat the phone's current resting position as neutral.
-        self.hasBaseline = NO;
-        self.gravity = CGPointZero;
+        for (UIView *view in self.iconViews.allObjects) {
+            M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
+            if (motion) motion.velocity = M3GRandomVelocity();
+        }
     }
 }
 
@@ -113,34 +115,88 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         motion.baseTransform = view.transform;
         objc_setAssociatedObject(view, M3GMotionKey, motion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         [self.iconViews addObject:view];
+        if (self.enabled) motion.velocity = M3GRandomVelocity();
+    }
+
+    // A non-cancelling pan recognizer preserves ordinary icon taps. A drag
+    // moves the icon directly; releasing it gives the icon the pan velocity.
+    if (!objc_getAssociatedObject(view, M3GPanKey)) {
+        UIPanGestureRecognizer *pan =
+            [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleIconPan:)];
+        pan.delegate = self;
+        pan.maximumNumberOfTouches = 1;
+        pan.cancelsTouchesInView = NO;
+        pan.delaysTouchesBegan = NO;
+        pan.delaysTouchesEnded = NO;
+        [view addGestureRecognizer:pan];
+        objc_setAssociatedObject(view, M3GPanKey, pan, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 }
 
-- (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration {
-    if (!self.enabled) {
-        self.gravity = CGPointZero;
-        return;
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (!self.enabled || !gestureRecognizer.view.superview) return NO;
+    CGPoint velocity = [(UIPanGestureRecognizer *)gestureRecognizer
+                        velocityInView:gestureRecognizer.view.superview];
+    return hypotf(velocity.x, velocity.y) > 8.0;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    // Do not block SpringBoard's own icon and page gestures.
+    return YES;
+}
+
+- (void)handleIconPan:(UIPanGestureRecognizer *)pan {
+    if (!self.enabled) return;
+
+    UIView *view = pan.view;
+    if (!view || !view.superview) return;
+
+    M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
+    if (!motion) {
+        [self registerIconView:view];
+        motion = objc_getAssociatedObject(view, M3GMotionKey);
+        if (!motion) return;
     }
 
-    // Calibrate the current holding angle as neutral so gravity does not
-    // constantly pull the icons when the user is simply holding the phone.
-    if (!self.hasBaseline) {
-        self.baselineX = acceleration.x;
-        self.baselineY = acceleration.y;
-        self.hasBaseline = YES;
-        self.gravity = CGPointZero;
-        return;
+    switch (pan.state) {
+        case UIGestureRecognizerStateBegan:
+            motion.dragging = YES;
+            motion.velocity = CGPointZero;
+            motion.dragOffsetAnchor = motion.offset;
+            break;
+
+        case UIGestureRecognizerStateChanged: {
+            CGPoint translation = [pan translationInView:view.superview];
+            motion.offset = CGPointMake(motion.dragOffsetAnchor.x + translation.x,
+                                        motion.dragOffsetAnchor.y + translation.y);
+            [self applyBoundsToView:view motion:motion];
+            [self applyTransformToView:view motion:motion];
+            break;
+        }
+
+        case UIGestureRecognizerStateEnded: {
+            CGPoint velocity = [pan velocityInView:view.superview];
+            CGFloat speed = hypotf(velocity.x, velocity.y);
+            if (speed > 1050.0) {
+                CGFloat scale = 1050.0 / speed;
+                velocity = CGPointMake(velocity.x * scale, velocity.y * scale);
+            }
+            motion.velocity = CGPointMake(velocity.x * 0.88, velocity.y * 0.88);
+            motion.dragging = NO;
+            break;
+        }
+
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            motion.dragging = NO;
+            if (hypotf(motion.velocity.x, motion.velocity.y) < 25.0)
+                motion.velocity = M3GRandomVelocity();
+            break;
+
+        default:
+            break;
     }
-
-    CGFloat x = acceleration.x - self.baselineX;
-    CGFloat y = acceleration.y - self.baselineY;
-    if (fabs(x) < 0.07) x = 0.0;
-    if (fabs(y) < 0.07) y = 0.0;
-
-    // Clamp the input to keep abrupt movement from producing extreme speeds.
-    x = MAX(-0.75, MIN(0.75, x));
-    y = MAX(-0.75, MIN(0.75, y));
-    self.gravity = CGPointMake(x * 650.0, -y * 650.0);
 }
 
 - (void)applyBoundsToView:(UIView *)view motion:(M3GIconMotion *)motion {
@@ -155,19 +211,30 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 
     if (motion.offset.x < minX) {
         motion.offset = CGPointMake(minX, motion.offset.y);
-        motion.velocity = CGPointMake(fabs(motion.velocity.x) * 0.58, motion.velocity.y);
+        if (motion.velocity.x < 0.0)
+            motion.velocity = CGPointMake(fabs(motion.velocity.x) * 0.82, motion.velocity.y);
     } else if (motion.offset.x > maxX) {
         motion.offset = CGPointMake(maxX, motion.offset.y);
-        motion.velocity = CGPointMake(-fabs(motion.velocity.x) * 0.58, motion.velocity.y);
+        if (motion.velocity.x > 0.0)
+            motion.velocity = CGPointMake(-fabs(motion.velocity.x) * 0.82, motion.velocity.y);
     }
 
     if (motion.offset.y < minY) {
         motion.offset = CGPointMake(motion.offset.x, minY);
-        motion.velocity = CGPointMake(motion.velocity.x, fabs(motion.velocity.y) * 0.58);
+        if (motion.velocity.y < 0.0)
+            motion.velocity = CGPointMake(motion.velocity.x, fabs(motion.velocity.y) * 0.82);
     } else if (motion.offset.y > maxY) {
         motion.offset = CGPointMake(motion.offset.x, maxY);
-        motion.velocity = CGPointMake(motion.velocity.x, -fabs(motion.velocity.y) * 0.58);
+        if (motion.velocity.y > 0.0)
+            motion.velocity = CGPointMake(motion.velocity.x, -fabs(motion.velocity.y) * 0.82);
     }
+}
+
+- (void)applyTransformToView:(UIView *)view motion:(M3GIconMotion *)motion {
+    CGAffineTransform transform = motion.baseTransform;
+    transform.tx += motion.offset.x;
+    transform.ty += motion.offset.y;
+    view.transform = transform;
 }
 
 - (void)resolveIconCollisions:(NSArray *)views {
@@ -175,14 +242,13 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         UIView *first = [views objectAtIndex:i];
         if (!first.superview) continue;
         M3GIconMotion *a = objc_getAssociatedObject(first, M3GMotionKey);
-        if (!a) continue;
+        if (!a || a.isDragging) continue;
 
         for (NSUInteger j = i + 1; j < views.count; j++) {
             UIView *second = [views objectAtIndex:j];
-            // Each SpringBoard page/dock is a separate coordinate space.
             if (!second.superview || second.superview != first.superview) continue;
             M3GIconMotion *b = objc_getAssociatedObject(second, M3GMotionKey);
-            if (!b) continue;
+            if (!b || b.isDragging) continue;
 
             CGFloat ax = first.center.x + a.offset.x;
             CGFloat ay = first.center.y + a.offset.y;
@@ -198,18 +264,16 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
             if (distanceSquared >= minimumDistance * minimumDistance) continue;
 
             BOOL centersOverlap = distanceSquared < 0.0001;
-            CGFloat distance = centersOverlap ? 0.01 : sqrt(distanceSquared);
+            CGFloat distance = centersOverlap ? 0.01 : sqrtf(distanceSquared);
             CGFloat nx = centersOverlap ? 1.0 : dx / distance;
             CGFloat ny = centersOverlap ? 0.0 : dy / distance;
             CGFloat overlap = minimumDistance - distance;
 
-            // Separate the icons evenly so they cannot remain interpenetrating.
             a.offset = CGPointMake(a.offset.x - nx * overlap * 0.5,
                                    a.offset.y - ny * overlap * 0.5);
             b.offset = CGPointMake(b.offset.x + nx * overlap * 0.5,
                                    b.offset.y + ny * overlap * 0.5);
 
-            // Apply a modest elastic impulse only when the icons are moving together.
             CGFloat relativeVelocity = (b.velocity.x - a.velocity.x) * nx +
                                        (b.velocity.y - a.velocity.y) * ny;
             if (relativeVelocity < 0.0) {
@@ -224,7 +288,6 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 }
 
 - (void)restoreAllIcons {
-    self.gravity = CGPointZero;
     for (UIView *view in self.iconViews.allObjects) {
         if (!view) continue;
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
@@ -232,6 +295,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 
         motion.offset = CGPointZero;
         motion.velocity = CGPointZero;
+        motion.dragging = NO;
         view.transform = motion.baseTransform;
     }
 }
@@ -240,16 +304,21 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     if (!self.enabled) return;
 
     const CGFloat dt = 1.0 / 60.0;
-    CGFloat damping = powf(0.94, dt * 60.0);
+    const CGFloat damping = powf(0.999, dt * 60.0);
     NSArray *views = self.iconViews.allObjects;
 
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
-        if (!motion) continue;
+        if (!motion || motion.isDragging) continue;
 
-        motion.velocity = CGPointMake((motion.velocity.x + self.gravity.x * dt) * damping,
-                                       (motion.velocity.y + self.gravity.y * dt) * damping);
+        motion.velocity = CGPointMake(motion.velocity.x * damping,
+                                       motion.velocity.y * damping);
+
+        // Keep a gentle minimum drift so icons never come to a complete stop.
+        CGFloat speed = hypotf(motion.velocity.x, motion.velocity.y);
+        if (speed < 32.0) motion.velocity = M3GRandomVelocity();
+
         motion.offset = CGPointMake(motion.offset.x + motion.velocity.x * dt,
                                     motion.offset.y + motion.velocity.y * dt);
         [self applyBoundsToView:view motion:motion];
@@ -260,13 +329,9 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
-        if (!motion) continue;
-
+        if (!motion || motion.isDragging) continue;
         [self applyBoundsToView:view motion:motion];
-        CGAffineTransform transform = motion.baseTransform;
-        transform.tx += motion.offset.x;
-        transform.ty += motion.offset.y;
-        view.transform = transform;
+        [self applyTransformToView:view motion:motion];
     }
 }
 
