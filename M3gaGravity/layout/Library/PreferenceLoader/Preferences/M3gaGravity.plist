@@ -43,7 +43,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Enable Gravity to make icons fall, collide, and pile up. Hold an icon briefly to pick it up, drag it, and release to fling it. Normal page swipes remain responsive. Physics pauses while a page is moving. Gravity is OFF by default.</string>
+            <string>Enable Gravity to make icons fall, collide, and pile up. Hold an icon briefly to pick it up, drag freely, and release to fling it. Pickup resets after each drag. Normal page swipes remain responsive. Physics pauses while a page is moving. Gravity is OFF by default.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -67,7 +67,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Version 0.2.8</string>
+            <string>Version 0.2.9</string>
         </dict>
         <dict>
             <key>cell</key>
