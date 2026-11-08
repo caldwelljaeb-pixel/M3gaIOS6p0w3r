@@ -67,7 +67,8 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
     M3GARefreshHomeScreen();
 }
 
-%hook SBIcon
+// SBApplicationIcon overrides both displayName and generateIconImage: on iOS 6.
+%hook SBApplicationIcon
 - (id)displayName {
     NSString *bundleIdentifier = M3GABundleIdentifier(self);
     NSDictionary *names = [M3GASettings objectForKey:@"Names"];
