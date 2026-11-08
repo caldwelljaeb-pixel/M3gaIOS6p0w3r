@@ -34,7 +34,7 @@ jobs:
           theos-sdks: https://github.com/theos/sdks
           theos-sdks-branch: master
 
-      - name: Remove simulator architectures from iOS SDK stubs
+      - name: Patch iOS 9.3 SDK stubs for ARMv7 Linux linking
         run: |
           python3 - <<'PY'
           import os
@@ -71,6 +71,23 @@ jobs:
           print(f"Scanned {scanned} SDK stubs; corrected {changed} top-level architecture lists.")
           if changed == 0:
               raise SystemExit("No simulator architecture entries were found; stop rather than silently building with an uncorrected SDK.")
+
+          # The public iOS 9.3 SDK's libSystem.B.tbd re-exports liblaunch,
+          # but the corresponding device library is not present in this SDK.
+          # Apple's linker therefore fails before producing the tweak binary.
+          # Remove only that unavailable re-export from the SDK metadata;
+          # do not fabricate or package a replacement runtime library.
+          removed = 0
+          for stub in sdk.rglob("*.tbd"):
+              original = stub.read_text(encoding="utf-8", errors="replace")
+              updated = original.replace(", /usr/lib/system/liblaunch.dylib", "")
+              removed += original.count("/usr/lib/system/liblaunch.dylib") - updated.count("/usr/lib/system/liblaunch.dylib")
+              if updated != original:
+                  stub.write_text(updated, encoding="utf-8")
+
+          print(f"Removed {removed} unavailable liblaunch re-export reference(s) from SDK metadata.")
+          if removed == 0:
+              raise SystemExit("Expected liblaunch re-export was not found; stop rather than silently building with an unpatched SDK.")
           PY
 
       - name: Build ARMv7 Debian package
