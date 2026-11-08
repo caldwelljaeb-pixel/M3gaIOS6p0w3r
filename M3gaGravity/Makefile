@@ -1,4 +1,4 @@
-# CI uses the iPhoneOS 9.3 device SDK with simulator-only stub architectures removed.
+# iOS 6-compatible plist-only preferences; no executable PreferenceBundle required.
 TARGET := iphone:clang:9.3:6.0
 ARCHS := armv7
 
@@ -10,15 +10,4 @@ M3gaGravity_FRAMEWORKS := UIKit Foundation QuartzCore CoreFoundation
 M3gaGravity_CFLAGS := -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-
-BUNDLE_NAME := M3gaGravityPrefs
-M3gaGravityPrefs_FILES := M3GRootListController.m
-M3gaGravityPrefs_INSTALL_PATH := /Library/PreferenceBundles
-M3gaGravityPrefs_BUNDLE_EXTENSION := bundle
-M3gaGravityPrefs_FRAMEWORKS := UIKit Foundation CoreFoundation
-M3gaGravityPrefs_PRIVATE_FRAMEWORKS := Preferences
-M3gaGravityPrefs_RESOURCE_DIRS := Resources
-M3gaGravityPrefs_CFLAGS := -fobjc-arc
-
-include $(THEOS_MAKE_PATH)/bundle.mk
 include $(THEOS_MAKE_PATH)/package.mk
