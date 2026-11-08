@@ -32,11 +32,6 @@ static NSDictionary *M3GAReadPreferences(void) {
 static void M3GAPostChanged(void) {
     CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), M3GAChangedNotification, NULL, NULL, YES);
 }
-static NSString *M3GAStringForProxy(id proxy, SEL selector) {
-    if (![proxy respondsToSelector:selector]) return nil;
-    id value = ((id (*)(id, SEL))objc_msgSend)(proxy, selector);
-    return [value isKindOfClass:[NSString class]] ? value : nil;
-}
 static void M3GAAddAppsFromDirectory(NSString *directory,
                                      NSMutableDictionary *appsByID) {
     NSFileManager *manager = [NSFileManager defaultManager];
