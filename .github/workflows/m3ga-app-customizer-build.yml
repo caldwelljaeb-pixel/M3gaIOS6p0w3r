@@ -84,7 +84,7 @@ jobs:
           DEB="$(find M3gaAppCustomizer/packages -name '*.deb' -print -quit)"
           test -n "$DEB"
           test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.appcustomizer"
-          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.1"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.2"
           test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
           dpkg-deb --info "$DEB"
           python3 M3gaAppCustomizer/Tests/verify_preferences.py "$DEB"
@@ -92,7 +92,7 @@ jobs:
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
-          name: M3gaAppCustomizer-0.1.1-deb
+          name: M3gaAppCustomizer-0.1.2-deb
           path: M3gaAppCustomizer/packages/*.deb
           if-no-files-found: error
           retention-days: 14
