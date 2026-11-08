@@ -13,6 +13,32 @@
 - (id)propertyForKey:(NSString *)key;
 - (void)setButtonAction:(SEL)action;
 @end
+@interface PSTableCell : UITableViewCell
++ (NSInteger)cellTypeFromString:(NSString *)name;
+@end
+@interface M3GAAppCustomizerBaseController : PSListController
+- (NSString *)plistName;
+- (NSString *)paneTitle;
+@end
+
+static const void *M3GAAppSpecifiersKey = &M3GAAppSpecifiersKey;
+static NSString * const M3GAPreferencesPath = @"/var/mobile/Library/Preferences/com.m3ga.appcustomizer.plist";
+static NSString * const M3GAIconsPath = @"/var/mobile/Library/M3gaAppCustomizer/Icons";
+static CFStringRef const M3GAChangedNotification = CFSTR("com.m3ga.appcustomizer/preferences.changed");
+
+static NSDictionary *M3GAReadPreferences(void) {
+    NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:M3GAPreferencesPath];
+    return [prefs isKindOfClass:[NSDictionary class]] ? prefs : [NSDictionary dictionary];
+}
+static void M3GAPostChanged(void) {
+    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), M3GAChangedNotification, NULL, NULL, YES);
+}
+static NSString *M3GAIconPathForBundleIdentifier(NSString *bundleID) {
+    if (![bundleID isKindOfClass:[NSString class]] || bundleID.length == 0) return nil;
+    NSCharacterSet *allowed = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
+    if ([bundleID rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) return nil;
+    return [M3GAIconsPath stringByAppendingPathComponent:[bundleID stringByAppendingPathExtension:@"png"]];
+}
 static void M3GAAddAppsFromDirectory(NSString *directory,
                                      NSMutableDictionary *appsByID) {
     NSFileManager *manager = [NSFileManager defaultManager];
