@@ -33,3 +33,9 @@ The CI attempt after the warning fix is intentionally kept separate from the fir
 
 ## Prototype limitations
 This is a first physics prototype, not yet device-validated. Collisions only resolve for icons sharing the same immediate superview, so collisions across pages/dock containers are not implemented. Sensor direction and motion strength need physical testing on iOS 6.1.3. Icon view class and SpringBoard layout interactions also need on-device verification. The build must be confirmed successful before installing.
+
+
+## Creator and credits
+- Settings displays the credit: **Made with ❤️ by M3gaIOS6p0w3r**.
+- The About Me section identifies M3gaIOS6p0w3r as the creator of tweaks, themes, and utilities for classic iOS devices, supporting the legacy iOS community.
+- Keep this creator credit and About Me section in future M3gaIOS6p0w3r tweak preference panes.
