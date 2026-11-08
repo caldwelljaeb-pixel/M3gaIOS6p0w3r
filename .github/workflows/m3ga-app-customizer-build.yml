@@ -3,7 +3,7 @@ name: M3gaAppCustomizer ARMv7 Build
 on:
   push:
     branches:
-      - m3ga-app-customizer-0.1.1
+      - m3ga-app-customizer-0.1.0
     paths:
       - "M3gaAppCustomizer/**"
       - ".github/workflows/m3ga-app-customizer-build.yml"
