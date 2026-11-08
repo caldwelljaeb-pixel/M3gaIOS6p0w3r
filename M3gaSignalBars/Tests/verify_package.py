@@ -13,7 +13,7 @@ def field(name):
     ).strip()
 
 assert field("Package") == "com.m3ga.m3gasignalbars"
-assert field("Version") == "0.1.1"
+assert field("Version") == "0.1.2"
 assert field("Architecture") == "iphoneos-arm"
 
 with tempfile.TemporaryDirectory() as temp:
@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory() as temp:
     loader_plist = root / "Library/PreferenceLoader/Preferences/M3gaSignalBars.plist"
 
     assert dylib.is_file() and dylib.stat().st_size > 1000, "Missing/empty tweak dylib"
-    assert filter_plist.is_file(), "Missing SpringBoard filter"
+    assert filter_plist.is_file(), "Missing UIKit injection filter"
     assert prefs_bundle.is_dir(), "Missing Settings bundle"
     assert loader_plist.is_file(), "Missing PreferenceLoader entry"
 
@@ -35,7 +35,7 @@ with tempfile.TemporaryDirectory() as temp:
 
     with filter_plist.open("rb") as stream:
         target_filter = plistlib.load(stream)
-    assert target_filter["Filter"]["Bundles"] == ["com.apple.springboard"]
+    assert target_filter["Filter"]["Bundles"] == ["com.apple.UIKit"]
 
     with loader_plist.open("rb") as stream:
         loader = plistlib.load(stream)
@@ -62,5 +62,5 @@ with tempfile.TemporaryDirectory() as temp:
     assert magic in (b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"), \
         "Tweak is not a little-endian ARM Mach-O image"
 
-print("PASS: Debian metadata, SpringBoard filter, ARM Mach-O, PreferenceLoader bundle, "
+print("PASS: Debian metadata, UIKit injection filter, ARM Mach-O, PreferenceLoader bundle, "
       "OFF-by-default switch, About the Tweak, Instructions, About Me, and Website verified.")
