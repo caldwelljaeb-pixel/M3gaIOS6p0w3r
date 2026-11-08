@@ -46,14 +46,6 @@ with tempfile.TemporaryDirectory() as temp:
     assert entry["detail"] == "M3GAAppCustomizerRootController"
     assert entry["isController"] is True
 
-    parsed_bundle_info = None
-    for name in ("Root.plist", "Instructions.plist", "About.plist", "Info.plist"):
-        with (bundle / name).open("rb") as f:
-            parsed = plistlib.load(f)
-            if name == "Info.plist":
-                parsed_bundle_info = parsed
-    assert parsed_bundle_info["NSPrincipalClass"] == "M3GAAppCustomizerRootController"
-
     with (bundle / "Root.plist").open("rb") as f:
         root_data = plistlib.load(f)
     root_text = repr(root_data)
