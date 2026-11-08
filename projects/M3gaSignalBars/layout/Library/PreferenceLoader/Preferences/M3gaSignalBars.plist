@@ -1,0 +1,8 @@
+{
+    entry = {
+        bundle = M3gaSignalBarsPrefs;
+        cell = PSLinkCell;
+        detail = M3gaSignalBarsController;
+        label = M3gaSignalBars;
+    };
+}

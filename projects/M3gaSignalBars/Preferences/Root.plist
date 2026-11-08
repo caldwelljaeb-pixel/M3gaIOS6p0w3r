@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+    <dict>
+        <key>cell</key>
+        <string>PSGroupCell</string>
+        <key>label</key>
+        <string>Cellular Signal Appearance</string>
+        <key>footerText</key>
+        <string>When enabled, iOS displays five full native cellular signal bars. This is cosmetic only: it does not create cellular coverage, calls, text messages, or mobile data. Your real modem signal is restored when you turn this off.</string>
+    </dict>
+    <dict>
+        <key>cell</key>
+        <string>PSSwitchCell</string>
+        <key>default</key>
+        <false/>
+        <key>defaults</key>
+        <string>com.m3ga.m3gasignalbars</string>
+        <key>key</key>
+        <string>Enabled</string>
+        <key>label</key>
+        <string>Enable Fake Cell Bars</string>
+        <key>PostNotification</key>
+        <string>com.m3ga.m3gasignalbars/preferences.changed</string>
+    </dict>
+    <dict>
+        <key>cell</key>
+        <string>PSGroupCell</string>
+        <key>footerText</key>
+        <string>Made with ❤️ by M3gaIOS6p0w3r</string>
+    </dict>
+</array>
+</plist>
