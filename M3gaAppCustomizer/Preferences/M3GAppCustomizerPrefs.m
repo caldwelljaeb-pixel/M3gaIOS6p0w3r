@@ -59,7 +59,7 @@ static NSArray *M3GAInstalledApps(void) {
             if (name.length == 0) name = [info objectForKey:@"CFBundleDisplayName"];
             if (name.length == 0) name = [info objectForKey:@"CFBundleName"];
             if (name.length == 0) name = identifier;
-            if (identifier.length > 0 && name.length > 0)
+            if ([(NSString *)identifier length] > 0 && name.length > 0)
                 [appsByID setObject:@{@"bundleID":identifier, @"name":name} forKey:identifier];
         }
     }
