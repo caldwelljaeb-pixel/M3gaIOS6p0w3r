@@ -43,7 +43,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Tilt your iPhone to move icons. Icons bounce off the edges and collide with other icons sharing the same SpringBoard container. Switch Enable Gravity off to restore their original positions.</string>
+            <string>Icons move automatically and bounce around the screen. Touch and drag an icon, then release to fling it. No tilting required. Switch Enable Gravity off to restore the original icon positions.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -67,13 +67,13 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Version 0.2.3</string>
+            <string>Version 0.2.4</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>Experimental icon physics for iOS 6. Gravity is disabled by default.</string>
+            <string>Experimental icon physics for iOS 6. No accelerometer input is used. Gravity is disabled by default.</string>
         </dict>
     </array>
 </dict>
