@@ -14,6 +14,25 @@ Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel ra
 Author: M3gaIOS6p0w3r
 Name: eBay Slider - Pale Lemon Rainbow Shimmer
 
+Package: com.m3ga.m3gagravity
+Version: 0.2.15
+Architecture: iphoneos-arm
+Maintainer: M3gaIOS6p0w3r
+Installed-Size: 152
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
+Filename: ./debs/com.m3ga.m3gagravity_0.2.15_iphoneos-arm.deb
+Size: 17090
+MD5sum: c0817a91d42bef803e11e0a497942927
+SHA1: fa57a9f5e119b65945c0613289dd9eb1c7a73e29
+SHA256: a378f15b6bc896085aa016f6feea53b299b2329e57100fd400fe61f371f05654
+Section: Tweaks
+Description: Home Screen icon physics for jailbroken iOS 6.
+ Hold an app icon briefly, then move your finger to pick it up and interact with it.
+ Drag icons around the page and release to fling them; enable gravity for falling,
+ collisions, and piles. Gravity is OFF by default. Includes Instructions and creator information.
+Author: M3gaIOS6p0w3r
+Name: M3gaGravity
+
 Package: com.m3gaios6p0w3r.statusbarcolor
 Version: 0.0.1-7
 Architecture: iphoneos-arm
@@ -25,12 +44,7 @@ MD5sum: 3116a8f0cb30886174723b7b95492712
 SHA1: 92e1d9bd11289c9b1bfcb494c1ffe0d127babb22
 SHA256: f588fd588e2dfa79207a7dcd2891ffc3c7a7cb4f3ad443d63120386a3e6ddd0e
 Section: Tweaks
-Priority: optional
-Description: Customize the color of your classic iOS 6 status-bar text and icons.
- Includes an Enable switch, Red/Green/Blue sliders, and numeric RGB fields (0–255) for precise color adjustments.
- Comes ready with Pale Lemon (#FFFAA8; RGB 255, 250, 168), or choose a completely custom shade.
- Designed for jailbroken ARMv7 devices running iOS 6.0 or later.
- IMPORTANT: To apply changes, put your iPhone to sleep (lock the screen), then wake it again. No respring or full power-off is required.
+Description: Recreated classic iOS 6 status-bar color controls with RGB sliders, numeric values, and an enable switch.
 Author: M3gaIOS6p0w3r
 Name: StatusBarColor
 
