@@ -13,7 +13,7 @@ if not deb.is_file():
 control = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Package"], text=True).strip()
 version = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Version"], text=True).strip()
 arch = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Architecture"], text=True).strip()
-assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.1", "iphoneos-arm")
+assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.2", "iphoneos-arm")
 
 with tempfile.TemporaryDirectory() as temp:
     root = Path(temp)
@@ -60,6 +60,10 @@ with tempfile.TemporaryDirectory() as temp:
 
     prefs_binary = bundle / "M3gaAppCustomizerPrefs"
     assert prefs_binary.exists()
+    tweak_source = Path("M3gaAppCustomizer/Tweak.x").read_text(encoding="utf-8")
+    assert "%hook SBApplicationIcon" in tweak_source, "App label and icon hooks must target SBApplicationIcon"
+    assert "M3gaAppCustomizer 0.1.2" in root_text, "Settings footer must show package version 0.1.2"
+
     data = (root / "Library/MobileSubstrate/DynamicLibraries/M3gaAppCustomizer.dylib").read_bytes()
     assert data[:4] in (b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe"), "Expected a little-endian Mach-O dylib"
 
