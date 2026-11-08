@@ -34,6 +34,43 @@ jobs:
           theos-sdks: https://github.com/theos/sdks
           theos-sdks-branch: master
 
+      - name: Remove simulator architectures from iOS SDK stubs
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          sdk = Path(os.environ["THEOS"]) / "sdks" / "iPhoneOS9.3.sdk"
+          if not sdk.is_dir():
+              raise SystemExit(f"Expected SDK not found: {sdk}")
+
+          arch_line = re.compile(r"(?m)^archs:\\s*\\[([^\\]]*)\\](\\s*(?:#.*)?)$")
+          changed = 0
+          scanned = 0
+
+          for stub in sdk.rglob("*.tbd"):
+              scanned += 1
+              original = stub.read_text(encoding="utf-8", errors="replace")
+
+              def device_arches(match):
+                  global changed
+                  arches = [item.strip() for item in match.group(1).split(",") if item.strip()]
+                  filtered = [item for item in arches if item not in {"i386", "x86_64"}]
+                  if filtered != arches:
+                      changed += 1
+                      return "archs: [" + ", ".join(filtered) + "]" + match.group(2)
+                  return match.group(0)
+
+              updated = arch_line.sub(device_arches, original, count=1)
+              if updated != original:
+                  stub.write_text(updated, encoding="utf-8")
+
+          print(f"Scanned {scanned} SDK stubs; corrected {changed} top-level architecture lists.")
+          if changed == 0:
+              raise SystemExit("No simulator architecture entries were found; stop rather than silently building with an uncorrected SDK.")
+          PY
+
       - name: Build ARMv7 Debian package
         working-directory: M3gaGravity
         run: |
