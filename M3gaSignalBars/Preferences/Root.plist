@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>M3gaSignalBars</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Cellular Signal</string>
+            <key>footerText</key>
+            <string>When enabled, M3gaSignalBars displays five full native cellular signal bars. It is a visual effect only and does not improve reception, connect to a carrier, or change calls, SMS, or mobile data.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>label</key>
+            <string>Enable Fake Cell Bars</string>
+            <key>defaults</key>
+            <string>com.m3ga.m3gasignalbars</string>
+            <key>key</key>
+            <string>Enabled</string>
+            <key>default</key>
+            <false/>
+            <key>PostNotification</key>
+            <string>com.m3ga.m3gasignalbars/preferences.changed</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>label</key>
+            <string>Instructions</string>
+            <key>bundle</key>
+            <string>M3gaSignalBarsPrefs</string>
+            <key>detail</key>
+            <string>M3GSignalBarsInstructionsController</string>
+            <key>isController</key>
+            <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>label</key>
+            <string>Info About Me</string>
+            <key>bundle</key>
+            <string>M3gaSignalBarsPrefs</string>
+            <key>detail</key>
+            <string>M3GSignalBarsAboutController</string>
+            <key>isController</key>
+            <true/>
+            <key>overridePrincipalClass</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Website</string>
+            <key>action</key>
+            <string>openCreatorWebsite:</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerText</key>
+            <string>M3gaSignalBars 0.1.0. Made with ❤️ by M3gaIOS6p0w3r.</string>
+        </dict>
+    </array>
+</dict>
+</plist>
