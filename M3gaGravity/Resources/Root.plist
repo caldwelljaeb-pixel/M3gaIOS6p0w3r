@@ -22,7 +22,7 @@
             <key>key</key>
             <string>Enabled</string>
             <key>default</key>
-            <true/>
+            <false/>
             <key>get</key>
             <string>readPreferenceValue:</string>
             <key>set</key>
@@ -38,7 +38,7 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Icons fall under gravity, collide, and pile up. Touch and drag an icon, then release to fling it. Gravity starts automatically. Switch Enable Gravity off to restore the original icon positions.</string>
+            <string>Icons fall under gravity, collide, and pile up. Hold an icon briefly to pick it up, drag it, and release to fling it. Page swipes remain responsive. Gravity is OFF by default. Switch Enable Gravity off to restore the original icon positions.</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -62,13 +62,13 @@
             <key>cell</key>
             <string>PSStaticTextCell</string>
             <key>label</key>
-            <string>Version 0.2.6</string>
+            <string>Version 0.2.8</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>footerText</key>
-            <string>Experimental icon physics for iOS 6. Gravity starts automatically.</string>
+            <string>Experimental icon physics for iOS 6. Gravity is OFF by default.</string>
         </dict>
     </array>
 </dict>
