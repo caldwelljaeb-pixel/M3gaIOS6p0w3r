@@ -29,11 +29,8 @@ static BOOL M3GReadEnabled(void) {
     return [[preferences objectForKey:@"Enabled"] boolValue];
 }
 
-static CGPoint M3GRandomVelocity(void) {
-    CGFloat angle = ((CGFloat)arc4random() / (CGFloat)UINT32_MAX) * (CGFloat)(M_PI * 2.0);
-    CGFloat speed = 42.0 + ((CGFloat)arc4random_uniform(3900) / 100.0);
-    return CGPointMake(cosf(angle) * speed, sinf(angle) * speed);
-}
+static const CGFloat M3GGravityAcceleration = 720.0;
+static const CGFloat M3GMaximumFallSpeed = 1050.0;
 
 @interface M3GGravityController : NSObject <UIGestureRecognizerDelegate>
 @property(nonatomic, strong) NSHashTable *iconViews;
@@ -101,7 +98,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     } else if (!wasEnabled && self.enabled) {
         for (UIView *view in self.iconViews.allObjects) {
             M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
-            if (motion) motion.velocity = M3GRandomVelocity();
+            if (motion) motion.velocity = CGPointZero;
         }
     }
 }
@@ -115,7 +112,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         motion.baseTransform = view.transform;
         objc_setAssociatedObject(view, M3GMotionKey, motion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         [self.iconViews addObject:view];
-        if (self.enabled) motion.velocity = M3GRandomVelocity();
+        motion.velocity = CGPointZero;
     }
 
     // A non-cancelling pan recognizer preserves ordinary icon taps. A drag
@@ -125,7 +122,9 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
             [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleIconPan:)];
         pan.delegate = self;
         pan.maximumNumberOfTouches = 1;
-        pan.cancelsTouchesInView = NO;
+        // Once a real drag starts, take ownership of the touch so SpringBoard's
+        // icon/page recognizers cannot steal the drag. Stationary taps still pass.
+        pan.cancelsTouchesInView = YES;
         pan.delaysTouchesBegan = NO;
         pan.delaysTouchesEnded = NO;
         [view addGestureRecognizer:pan];
@@ -190,8 +189,7 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
             motion.dragging = NO;
-            if (hypotf(motion.velocity.x, motion.velocity.y) < 25.0)
-                motion.velocity = M3GRandomVelocity();
+            // A cancelled drag simply resumes falling from its current position.
             break;
 
         default:
@@ -226,7 +224,11 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     } else if (motion.offset.y > maxY) {
         motion.offset = CGPointMake(motion.offset.x, maxY);
         if (motion.velocity.y > 0.0)
-            motion.velocity = CGPointMake(motion.velocity.x, -fabs(motion.velocity.y) * 0.82);
+            // The bottom is the floor: a small bounce, then settle instead of
+            // continuously ricocheting around the screen.
+            CGFloat impact = fabs(motion.velocity.y);
+            CGFloat rebound = impact > 95.0 ? impact * 0.16 : 0.0;
+            motion.velocity = CGPointMake(motion.velocity.x, -rebound);
     }
 }
 
@@ -312,12 +314,19 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
         M3GIconMotion *motion = objc_getAssociatedObject(view, M3GMotionKey);
         if (!motion || motion.isDragging) continue;
 
+        // Constant downward acceleration creates real falling motion. Icons
+        // naturally come to rest on the bottom edge instead of wandering forever.
         motion.velocity = CGPointMake(motion.velocity.x * damping,
-                                       motion.velocity.y * damping);
+            MIN(M3GMaximumFallSpeed, motion.velocity.y + M3GGravityAcceleration * dt));
 
-        // Keep a gentle minimum drift so icons never come to a complete stop.
-        CGFloat speed = hypotf(motion.velocity.x, motion.velocity.y);
-        if (speed < 32.0) motion.velocity = M3GRandomVelocity();
+        CGFloat maxY = CGRectGetMaxY(view.superview.bounds)
+            - CGRectGetHeight(view.bounds) * 0.5 - view.center.y;
+        BOOL restingOnFloor = motion.offset.y >= maxY - 1.0;
+        if (restingOnFloor) {
+            motion.velocity = CGPointMake(motion.velocity.x * 0.86, motion.velocity.y);
+            if (fabs(motion.velocity.x) < 7.0)
+                motion.velocity = CGPointMake(0.0, motion.velocity.y);
+        }
 
         motion.offset = CGPointMake(motion.offset.x + motion.velocity.x * dt,
                                     motion.offset.y + motion.velocity.y * dt);
