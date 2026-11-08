@@ -1,9 +1,12 @@
 Package: com.m3ga.m3gagravity
 Name: M3gaGravity
-Version: 0.2.14
+Version: 0.2.15
 Architecture: iphoneos-arm
-Description: iOS 6 icon physics tweak with a working main settings controller, Website button, Instructions, and creator information.
+Description: Home Screen icon physics for jailbroken iOS 6.
+ Hold an app icon briefly, then move your finger to pick it up and interact with it.
+ Drag icons around the page and release to fling them; enable gravity for falling,
+ collisions, and piles. Gravity is OFF by default. Includes Instructions and creator information.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks
-Depends: mobilesubstrate, preferenceloader
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
