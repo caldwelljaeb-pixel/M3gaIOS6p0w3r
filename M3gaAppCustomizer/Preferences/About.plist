@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>title</key><string>Info About Me</string><key>items</key><array>
+<dict><key>cell</key><string>PSGroupCell</string><key>label</key><string>About the Creator</string><key>footerText</key><string>M3gaIOS6p0w3r creates classic iOS customization projects, jailbreak tweaks, themes, and tools that help preserve the look and feel of older Apple software. The goal is to keep older iPhones fun, customizable, and useful while respecting the original iOS experience.</string></dict>
+<dict><key>cell</key><string>PSGroupCell</string><key>label</key><string>What I Create</string><key>footerText</key><string>My projects explore new ways to customize classic iOS, add useful features, and give legacy iPhones fresh experiences. I enjoy experimenting with tweak ideas, visual themes, settings panels, and small utilities designed with older firmware in mind.</string></dict>
+<dict><key>cell</key><string>PSStaticTextCell</string><key>label</key><string>Made with ❤️ by M3gaIOS6p0w3r</string></dict>
+</array></dict></plist>
