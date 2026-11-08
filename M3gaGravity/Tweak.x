@@ -48,7 +48,7 @@ static const CGFloat M3GMaximumFallSpeed = 980.0;
 static const CGFloat M3GIconRestitution = 0.10;
 static const CGFloat M3GFloorRestitution = 0.12;
 static const CGFloat M3GCollisionSlop = 0.35;
-static const NSUInteger M3GCollisionIterations = 8;
+static const NSUInteger M3GCollisionIterations = 4;
 
 static CGFloat M3GInitialHorizontalSpeed(void) {
     // A small sideways impulse makes icons tumble into a heap rather than
@@ -63,6 +63,7 @@ static CGFloat M3GCollisionRadius(UIView *view) {
 @interface M3GGravityController : NSObject <UIGestureRecognizerDelegate>
 @property(nonatomic, strong) NSHashTable *iconViews;
 @property(nonatomic, strong) CADisplayLink *displayLink;
+@property(nonatomic, assign) CFTimeInterval lastStepTimestamp;
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 + (instancetype)sharedController;
 - (void)registerIconView:(UIView *)view;
@@ -170,8 +171,13 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
  shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    // A moving icon belongs to the user's drag rather than a competing
-    // SpringBoard icon-rearrange gesture. Stationary taps still pass.
+    // Let SpringBoard's page-scroll pan proceed while our long-press is
+    // still waiting to become an icon pickup. Once the hold has begun, the
+    // custom gesture owns the icon and can be dragged/flung.
+    BOOL ourPickupHasStarted = gestureRecognizer.state != UIGestureRecognizerStatePossible;
+    BOOL otherIsScrollPan = [otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]
+        && [otherGestureRecognizer.view isKindOfClass:[UIScrollView class]];
+    if (otherIsScrollPan && !ourPickupHasStarted) return YES;
     return NO;
 }
 
@@ -308,6 +314,26 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
     return visible;
 }
 
+- (BOOL)isPageScrollActiveForView:(UIView *)view {
+    // SpringBoard's icon pages are hosted in a UIScrollView subclass on
+    // iOS 6. Pause physics while the user is paging or the page is decelerating.
+    for (UIView *ancestor = view; ancestor; ancestor = ancestor.superview) {
+        if ([ancestor isKindOfClass:[UIScrollView class]]) {
+            UIScrollView *scrollView = (UIScrollView *)ancestor;
+            if (scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating)
+                return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)isAnyPageScrollActive:(NSArray *)views {
+    for (UIView *view in views) {
+        if ([self isPageScrollActiveForView:view]) return YES;
+    }
+    return NO;
+}
+
 - (void)resolveIconCollisions:(NSArray *)views {
     for (NSUInteger pass = 0; pass < M3GCollisionIterations; pass++) {
         for (NSUInteger i = 0; i < views.count; i++) {
@@ -410,12 +436,23 @@ static void M3GPreferencesChangedCallback(CFNotificationCenterRef center,
 - (void)step {
     if (!self.enabled) return;
 
-    const CGFloat dt = 1.0 / 60.0;
+    // Cap physics work at 30 updates per second. UIKit continues to render
+    // SpringBoard page transitions at the display's normal refresh rate.
+    CFTimeInterval now = CACurrentMediaTime();
+    if (self.lastStepTimestamp > 0.0 && now - self.lastStepTimestamp < (1.0 / 30.0))
+        return;
+    self.lastStepTimestamp = now;
+
+    const CGFloat dt = 1.0 / 30.0;
     const CGFloat airDamping = 0.998;
 
     // Only simulate icons currently inside the visible SpringBoard viewport.
     // Off-screen pages keep their last positions and are simulated when shown.
     NSArray *views = [self visibleIconViews];
+
+    // Never mutate icon transforms while SpringBoard is scrolling between
+    // pages. The stock page-scroll animation gets full control of the screen.
+    if ([self isAnyPageScrollActive:views]) return;
 
     for (UIView *view in views) {
         if (!view || !view.superview) continue;
