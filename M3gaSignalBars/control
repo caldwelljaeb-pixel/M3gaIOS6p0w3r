@@ -1,11 +1,12 @@
 Package: com.m3ga.m3gasignalbars
 Name: M3gaSignalBars
-Version: 0.1.0
+Version: 0.1.1
 Architecture: iphoneos-arm
 Description: Cosmetic full-strength cellular signal bars for classic iOS 6.
- Shows five full native signal bars when enabled and restores the real modem
- signal display when disabled. It does not improve reception or create cellular
- service. Includes an optional Settings switch, Instructions, and creator info.
+ Displays five full native signal bars when enabled and restores the real modem
+ signal display when disabled. This does not improve reception or create service.
+ Includes Enable Fake Cell Bars, About the Tweak, Instructions, Info About Me,
+ and the creator's website link.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks

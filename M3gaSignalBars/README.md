@@ -1,25 +1,25 @@
-# M3gaSignalBars 0.1.0
+# M3gaSignalBars 0.1.1
 
-An iOS 6.1.3 / ARMv7 SpringBoard tweak for the iPhone 4S.
+An iOS 6.0–6.1.3 / ARMv7 SpringBoard tweak, intended for the iPhone 4S.
 
-## What it does
+## Features
 
-When enabled, it asks the native iOS cellular signal view to display five full bars. It remembers the real bar value supplied by the system and restores that value when disabled.
+- Five full native iOS 6 cellular signal bars when enabled.
+- Enable Fake Cell Bars switch in Settings, OFF by default.
+- Switch OFF restores the latest real signal-bar count supplied by iOS.
+- About the Tweak, Instructions, Info About Me, and Website entries.
+- Creator credit: Made with ❤️ by M3gaIOS6p0w3r.
 
-This is entirely cosmetic. It does not improve reception or create cellular service, calls, SMS, or mobile data. If iOS is not showing a native cellular signal item (for example, no SIM/no service), the tweak cannot make that system item appear.
+## Important
 
-## Settings
+Cosmetic only. It does not improve reception, change the modem, unlock a carrier, or create cellular coverage, calls, SMS, or mobile data.
 
-Settings → M3gaSignalBars → Enable Fake Cell Bars
+## iOS 6 implementation note
 
-The switch defaults to OFF. Instructions, creator information, and a working creator website link are included.
-
-## Build
-
-Built using Theos for `iphone:clang:9.3:6.0`, `armv7`, with mobilesubstrate and preferenceloader dependencies.
+The iOS 6.1 UIKit runtime header for UIStatusBarSignalStrengthItemView exposes the signal count as the _signalStrengthBars ivar and updates it in updateForNewData:actions:. This version hooks that iOS 6 method, rather than a setter that is not present in the iOS 6.1 class interface.
 
 ## Test status
 
-This is a first test build. Package metadata, installed paths, plist contents, default-OFF setting, and ARM Mach-O format are checked in GitHub Actions. Actual behavior still requires testing on an iPhone 4S running iOS 6.1.3.
+The source builds for ARMv7 and package verification checks the binary format, PreferenceLoader bundle registration, all Settings pages, the default-OFF switch, and package paths. Final visual behavior must still be tested on the physical device.
 
 Made with ❤️ by M3gaIOS6p0w3r.

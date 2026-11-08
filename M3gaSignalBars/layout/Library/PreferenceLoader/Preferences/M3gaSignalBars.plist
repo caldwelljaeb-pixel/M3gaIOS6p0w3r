@@ -1,10 +1,21 @@
-{
-    entry = {
-        bundle = "M3gaSignalBarsPrefs";
-        cell = PSLinkCell;
-        detail = "M3GSignalBarsRootController";
-        isController = true;
-        label = "M3gaSignalBars";
-        icon = "M3gaSignalBars";
-    };
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>entry</key>
+    <dict>
+        <key>cell</key>
+        <string>PSLinkCell</string>
+        <key>label</key>
+        <string>M3gaSignalBars</string>
+        <key>bundle</key>
+        <string>M3gaSignalBarsPrefs</string>
+        <key>detail</key>
+        <string>M3GSignalBarsRootController</string>
+        <key>isController</key>
+        <true/>
+        <key>overridePrincipalClass</key>
+        <true/>
+    </dict>
+</dict>
+</plist>

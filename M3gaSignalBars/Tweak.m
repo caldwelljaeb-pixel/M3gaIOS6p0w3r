@@ -6,12 +6,22 @@
 #import <dispatch/dispatch.h>
 
 /*
- * M3gaSignalBars 0.1.0
- * iOS 6 / ARMv7 SpringBoard-only cosmetic signal indicator override.
+ * M3gaSignalBars 0.1.1
+ * iOS 6.0-6.1.3 / ARMv7.
  *
- * The real modem signal is never changed. We remember the value supplied by
- * SpringBoard and only replace the value sent to the native status-bar view.
+ * IMPORTANT: iOS 6.1 does not implement
+ * -setSignalStrengthBars: on UIStatusBarSignalStrengthItemView.
+ * The real view stores the count in _signalStrengthBars and updates it in
+ * -updateForNewData:actions:. Hook that actual iOS 6 method instead.
+ *
+ * This is a display-only change. It never alters the modem or telephony data.
  */
+
+@interface UIStatusBarSignalStrengthItemView : UIView
+- (BOOL)updateForNewData:(id)data actions:(int)actions;
+- (CGFloat)updateContentsAndWidth;
+- (void)setVisible:(BOOL)visible frame:(CGRect)frame duration:(double)duration;
+@end
 
 static NSString * const MSBPreferencesPath =
     @"/var/mobile/Library/Preferences/com.m3ga.m3gasignalbars.plist";
@@ -19,7 +29,7 @@ static CFStringRef const MSBPreferencesChanged =
     CFSTR("com.m3ga.m3gasignalbars/preferences.changed");
 
 static const void *MSBOriginalBarsKey = &MSBOriginalBarsKey;
-static void (*MSBOriginalSetSignalStrengthBars)(id, SEL, int) = NULL;
+static BOOL (*MSBOriginalUpdateForNewData)(id, SEL, id, int) = NULL;
 
 static BOOL MSBIsEnabled(void) {
     NSDictionary *preferences =
@@ -28,91 +38,96 @@ static BOOL MSBIsEnabled(void) {
     return value ? [value boolValue] : NO;
 }
 
-static void MSBSetSignalStrengthBars(id self, SEL command, int bars) {
-    @autoreleasepool {
-        // Keep the latest real value so disabling the tweak can restore it
-        // immediately, without waiting for another modem update.
-        objc_setAssociatedObject(self,
-                                 MSBOriginalBarsKey,
-                                 [NSNumber numberWithInt:bars],
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+static int MSBRealBars(UIStatusBarSignalStrengthItemView *view) {
+    NSNumber *saved = (NSNumber *)objc_getAssociatedObject(view, MSBOriginalBarsKey);
+    if (saved) return [saved intValue];
 
-        int displayedBars = MSBIsEnabled() ? 5 : bars;
-        if (MSBOriginalSetSignalStrengthBars) {
-            MSBOriginalSetSignalStrengthBars(self, command, displayedBars);
-        }
-    }
+    int current = MSHookIvar<int>(view, "_signalStrengthBars");
+    objc_setAssociatedObject(view,
+                             MSBOriginalBarsKey,
+                             [NSNumber numberWithInt:current],
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return current;
 }
 
-static NSNumber *MSBReadCurrentBars(id item) {
-    NSNumber *saved = (NSNumber *)objc_getAssociatedObject(item, MSBOriginalBarsKey);
-    if (saved) return saved;
+static void MSBApplyToSignalView(UIStatusBarSignalStrengthItemView *view,
+                                 BOOL enabled) {
+    if (!view) return;
 
-    id value = nil;
-    @try {
-        value = [item valueForKey:@"signalStrengthBars"];
-    } @catch (NSException *exception) {
-        value = nil;
+    int actualBars = MSBRealBars(view);
+    int displayBars = enabled ? 5 : actualBars;
+
+    // iOS 6 stores its signal count in this ivar. There is no public setter
+    // and the iOS 6.1 class-dump confirms updateForNewData:actions: as the
+    // update entry point.
+    MSHookIvar<int>(view, "_signalStrengthBars") = displayBars;
+
+    if (enabled) {
+        view.hidden = NO;
+        view.alpha = 1.0;
+        [view setVisible:YES frame:view.frame duration:0.0];
     }
 
-    if (![value respondsToSelector:@selector(intValue)]) {
-        @try {
-            value = [item valueForKey:@"_signalStrengthBars"];
-        } @catch (NSException *exception) {
-            value = nil;
-        }
-    }
-
-    return [value respondsToSelector:@selector(intValue)] ? value : nil;
+    // Rebuild the native signal image/width after changing the stored count.
+    [view updateContentsAndWidth];
+    [view setNeedsLayout];
+    [view setNeedsDisplay];
 }
 
-static void MSBRefreshViewsInContainer(UIView *container, BOOL enabled) {
+static void MSBVisitViews(UIView *container, BOOL enabled) {
     if (!container) return;
 
     Class signalClass = objc_getClass("UIStatusBarSignalStrengthItemView");
-    SEL setter = sel_registerName("setSignalStrengthBars:");
-
     if (signalClass && [container isKindOfClass:signalClass]) {
-        NSNumber *realBars = MSBReadCurrentBars(container);
-        if (realBars) {
-            objc_setAssociatedObject(container,
-                                     MSBOriginalBarsKey,
-                                     realBars,
-                                     OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
-            // Call the saved original IMP directly. This avoids recording our
-            // own cosmetic value (5) as the real modem value.
-            if (MSBOriginalSetSignalStrengthBars) {
-                int value = enabled ? 5 : [realBars intValue];
-                MSBOriginalSetSignalStrengthBars(container, setter, value);
-            }
-        }
+        MSBApplyToSignalView((UIStatusBarSignalStrengthItemView *)container, enabled);
     }
 
     for (UIView *child in [container subviews]) {
-        MSBRefreshViewsInContainer(child, enabled);
+        MSBVisitViews(child, enabled);
     }
 }
 
 static void MSBRefreshStatusBar(void) {
-    BOOL enabled = MSBIsEnabled();
-
     UIApplication *application = [UIApplication sharedApplication];
     id statusBar = nil;
-    id foregroundView = nil;
 
     @try {
         statusBar = [application valueForKey:@"statusBar"];
-        foregroundView = [statusBar valueForKey:@"foregroundView"];
     } @catch (NSException *exception) {
-        // If this iOS build exposes a different private status-bar structure,
-        // the normal setter hook will still apply the preference on updates.
+        NSLog(@"M3gaSignalBars: unable to access the native status bar: %@", exception);
         return;
     }
 
-    if ([foregroundView isKindOfClass:[UIView class]]) {
-        MSBRefreshViewsInContainer((UIView *)foregroundView, enabled);
+    if ([statusBar isKindOfClass:[UIView class]]) {
+        MSBVisitViews((UIView *)statusBar, MSBIsEnabled());
     }
+}
+
+static BOOL MSBUpdateForNewData(id self,
+                                SEL command,
+                                id data,
+                                int actions) {
+    BOOL result = NO;
+
+    if (MSBOriginalUpdateForNewData) {
+        result = MSBOriginalUpdateForNewData(self, command, data, actions);
+    }
+
+    UIStatusBarSignalStrengthItemView *view =
+        (UIStatusBarSignalStrengthItemView *)self;
+
+    // Save the real count produced by iOS before applying our visual override.
+    int actualBars = MSHookIvar<int>(view, "_signalStrengthBars");
+    objc_setAssociatedObject(view,
+                             MSBOriginalBarsKey,
+                             [NSNumber numberWithInt:actualBars],
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    if (MSBIsEnabled()) {
+        MSBApplyToSignalView(view, YES);
+    }
+
+    return result;
 }
 
 static void MSBPreferencesChangedCallback(CFNotificationCenterRef center,
@@ -129,15 +144,18 @@ __attribute__((constructor))
 static void MSBInitialize(void) {
     @autoreleasepool {
         Class signalClass = objc_getClass("UIStatusBarSignalStrengthItemView");
-        SEL setter = sel_registerName("setSignalStrengthBars:");
+        SEL updateSelector = sel_registerName("updateForNewData:actions:");
+        Method updateMethod = signalClass
+            ? class_getInstanceMethod(signalClass, updateSelector)
+            : NULL;
 
-        if (signalClass && class_getInstanceMethod(signalClass, setter)) {
+        if (signalClass && updateMethod) {
             MSHookMessageEx(signalClass,
-                            setter,
-                            (IMP)MSBSetSignalStrengthBars,
-                            (IMP *)&MSBOriginalSetSignalStrengthBars);
+                            updateSelector,
+                            (IMP)MSBUpdateForNewData,
+                            (IMP *)&MSBOriginalUpdateForNewData);
         } else {
-            NSLog(@"M3gaSignalBars: native signal-bars setter was not found.");
+            NSLog(@"M3gaSignalBars: iOS 6 signal view/update method was not found.");
         }
 
         CFNotificationCenterAddObserver(
@@ -149,8 +167,6 @@ static void MSBInitialize(void) {
             CFNotificationSuspensionBehaviorCoalesce
         );
 
-        // Apply an existing preference as soon as SpringBoard has its status
-        // bar views. The switch is OFF unless the user explicitly enables it.
         dispatch_async(dispatch_get_main_queue(), ^{
             MSBRefreshStatusBar();
         });

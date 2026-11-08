@@ -14,7 +14,7 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 BUNDLE_NAME := M3gaSignalBarsPrefs
 M3gaSignalBarsPrefs_FILES := Preferences/M3GPrefsControllers.m
 M3gaSignalBarsPrefs_INSTALL_PATH := /Library/PreferenceBundles
-M3gaSignalBarsPrefs_RESOURCE_FILES := Preferences/Info.plist Preferences/Root.plist Preferences/Instructions.plist Preferences/About.plist
+M3gaSignalBarsPrefs_RESOURCE_FILES := Preferences/Info.plist Preferences/Root.plist Preferences/Details.plist Preferences/Instructions.plist Preferences/About.plist
 M3gaSignalBarsPrefs_FRAMEWORKS := UIKit Foundation
 M3gaSignalBarsPrefs_PRIVATE_FRAMEWORKS := Preferences
 M3gaSignalBarsPrefs_CFLAGS := -fno-objc-arc

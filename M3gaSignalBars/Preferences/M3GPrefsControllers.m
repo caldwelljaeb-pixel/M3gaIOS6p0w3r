@@ -29,6 +29,8 @@ static char MSBLoadedSpecifiersKey;
         NSMutableArray *loaded = [self loadSpecifiersFromPlistName:name target:self];
 
         if ([loaded isKindOfClass:[NSArray class]] && [loaded count] > 0) {
+            // PSListController uses its own specifier storage while building
+            // group metadata; install the array there as well as caching it.
             [self setSpecifiers:loaded];
             objc_setAssociatedObject(self,
                                      &MSBLoadedSpecifiersKey,
@@ -49,13 +51,8 @@ static char MSBLoadedSpecifiersKey;
     return [self paneTitle];
 }
 
-- (NSString *)plistName {
-    return nil;
-}
-
-- (NSString *)paneTitle {
-    return nil;
-}
+- (NSString *)plistName { return nil; }
+- (NSString *)paneTitle { return nil; }
 
 @end
 
@@ -64,13 +61,8 @@ static char MSBLoadedSpecifiersKey;
 
 @implementation M3GSignalBarsRootController
 
-- (NSString *)plistName {
-    return @"Root";
-}
-
-- (NSString *)paneTitle {
-    return @"M3gaSignalBars";
-}
+- (NSString *)plistName { return @"Root"; }
+- (NSString *)paneTitle { return @"M3gaSignalBars"; }
 
 - (void)openCreatorWebsite:(id)specifier {
     NSURL *websiteURL =
@@ -92,32 +84,26 @@ static char MSBLoadedSpecifiersKey;
 
 @end
 
+@interface M3GSignalBarsDetailsController : M3GSignalBarsBaseController
+@end
+
+@implementation M3GSignalBarsDetailsController
+- (NSString *)plistName { return @"Details"; }
+- (NSString *)paneTitle { return @"About the Tweak"; }
+@end
+
 @interface M3GSignalBarsInstructionsController : M3GSignalBarsBaseController
 @end
 
 @implementation M3GSignalBarsInstructionsController
-
-- (NSString *)plistName {
-    return @"Instructions";
-}
-
-- (NSString *)paneTitle {
-    return @"Instructions";
-}
-
+- (NSString *)plistName { return @"Instructions"; }
+- (NSString *)paneTitle { return @"Instructions"; }
 @end
 
 @interface M3GSignalBarsAboutController : M3GSignalBarsBaseController
 @end
 
 @implementation M3GSignalBarsAboutController
-
-- (NSString *)plistName {
-    return @"About";
-}
-
-- (NSString *)paneTitle {
-    return @"Info About Me";
-}
-
+- (NSString *)plistName { return @"About"; }
+- (NSString *)paneTitle { return @"Info About Me"; }
 @end

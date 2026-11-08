@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>title</key>
+    <string>About the Tweak</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>What Is M3gaSignalBars?</string>
+            <key>footerText</key>
+            <string>M3gaSignalBars is a cosmetic cellular indicator tweak for classic iOS 6. When switched on, it makes the native status-bar signal indicator display five full bars, giving the appearance of a very strong signal.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>How It Works</string>
+            <key>footerText</key>
+            <string>The tweak changes the bar count used by the native iOS 6 signal-strength view. It keeps the original iOS artwork and status-bar style rather than drawing a separate fake icon over the screen. Switching it off restores the real bar count received from iOS.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Important: Appearance Only</string>
+            <key>footerText</key>
+            <string>Five displayed bars do not mean the phone has better reception. M3gaSignalBars cannot create cellular coverage, unlock a carrier, activate a SIM, or make calls, SMS, or mobile data work. The modem's actual signal is not modified.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Compatibility</string>
+            <key>footerText</key>
+            <string>Designed for jailbroken iPhone 4S and other ARMv7 devices running iOS 6.0–6.1.3. This is a test release and should be evaluated on the device before wider distribution.</string>
+        </dict>
+    </array>
+</dict>
+</plist>
