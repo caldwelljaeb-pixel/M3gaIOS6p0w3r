@@ -3,79 +3,127 @@
 #import <objc/runtime.h>
 
 /*
- * Preferences is a private framework. Keep the declarations local so this
- * bundle can build against the public iOS 9.3 SDK while remaining compatible
- * with the iOS 6 PSListController runtime.
+ * Preferences is private on iOS 6. Keep the declarations local so the bundle
+ * can still be built with the public iOS 9.3 SDK headers.
  */
 @interface PSListController : UIViewController
-- (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
+- (NSMutableArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
+- (void)setSpecifiers:(NSMutableArray *)specifiers;
 @end
 
-static char M3GInstructionsCacheKey;
-static char M3GAboutCacheKey;
+@interface M3GBaseController : PSListController
+- (NSString *)plistName;
+- (NSString *)paneTitle;
+@end
 
-@interface M3GInstructionsController : PSListController
+static char M3GLoadedSpecifiersKey;
+
+@implementation M3GBaseController
+
+- (NSBundle *)bundle {
+    // Every pane plist is installed inside M3gaGravityPrefs.bundle.
+    return [NSBundle bundleForClass:[self class]];
+}
+
+- (NSArray *)specifiers {
+    NSArray *cached = objc_getAssociatedObject(self, &M3GLoadedSpecifiersKey);
+
+    if (!cached) {
+        NSString *name = [self plistName];
+        NSMutableArray *loaded = [self loadSpecifiersFromPlistName:name target:self];
+
+        if ([loaded isKindOfClass:[NSArray class]] && [loaded count] > 0) {
+            /*
+             * PSListController reads its own specifiers storage when preparing
+             * section/group metadata. Returning a separate cached array alone
+             * is not sufficient on older iOS releases.
+             */
+            [self setSpecifiers:loaded];
+            objc_setAssociatedObject(self, &M3GLoadedSpecifiersKey,
+                                     loaded, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+            cached = loaded;
+        } else {
+            NSLog(@"M3gaGravity: failed to load %@.plist from %@",
+                  name, [[self bundle] bundlePath]);
+            return [NSArray array];
+        }
+    }
+
+    return cached;
+}
+
+- (NSString *)navigationTitle {
+    return [self paneTitle];
+}
+
+- (NSString *)plistName {
+    return nil;
+}
+
+- (NSString *)paneTitle {
+    return nil;
+}
+
+@end
+
+@interface M3GRootController : M3GBaseController
+@end
+
+@implementation M3GRootController
+
+- (NSString *)plistName {
+    return @"Root";
+}
+
+- (NSString *)paneTitle {
+    return @"M3gaGravity";
+}
+
+/* PSButtonCell sends its configured action selector to this pane controller. */
+- (void)openCreatorWebsite:(id)specifier {
+    NSURL *websiteURL = [NSURL URLWithString:@"https://github.com/caldwelljaeb-pixel"];
+    BOOL opened = websiteURL && [[UIApplication sharedApplication] openURL:websiteURL];
+
+    if (!opened) {
+        UIAlertView *alert = [[UIAlertView alloc]
+            initWithTitle:@"Website"
+                  message:@"Safari could not be opened for the creator website."
+                 delegate:nil
+        cancelButtonTitle:@"OK"
+        otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+    }
+}
+
+@end
+
+@interface M3GInstructionsController : M3GBaseController
 @end
 
 @implementation M3GInstructionsController
 
-- (NSBundle *)bundle {
-    // Make plist lookup resolve inside M3gaGravityPrefs.bundle itself.
-    return [NSBundle bundleForClass:[self class]];
-}
-
-- (NSString *)navigationTitle {
+- (NSString *)plistName {
     return @"Instructions";
 }
 
-/* This action is used by the Website button on the main M3gaGravity page. */
-- (void)openCreatorWebsite {
-    NSURL *websiteURL = [NSURL URLWithString:@"https://github.com/caldwelljaeb-pixel"];
-    if (websiteURL) {
-        [[UIApplication sharedApplication] openURL:websiteURL];
-    }
-}
-
-- (NSArray *)specifiers {
-    NSArray *cached = objc_getAssociatedObject(self, &M3GInstructionsCacheKey);
-    if (!cached) {
-        cached = [self loadSpecifiersFromPlistName:@"Instructions" target:self];
-        if (cached) {
-            objc_setAssociatedObject(self, &M3GInstructionsCacheKey,
-                                     cached, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        }
-    }
-    self.title = @"Instructions";
-    return cached ?: [NSArray array];
+- (NSString *)paneTitle {
+    return @"Instructions";
 }
 
 @end
 
-@interface M3GAboutController : PSListController
+@interface M3GAboutController : M3GBaseController
 @end
 
 @implementation M3GAboutController
 
-- (NSBundle *)bundle {
-    // Use the same resource bundle, but this controller loads About.plist.
-    return [NSBundle bundleForClass:[self class]];
+- (NSString *)plistName {
+    return @"About";
 }
 
-- (NSString *)navigationTitle {
+- (NSString *)paneTitle {
     return @"Info About Me";
-}
-
-- (NSArray *)specifiers {
-    NSArray *cached = objc_getAssociatedObject(self, &M3GAboutCacheKey);
-    if (!cached) {
-        cached = [self loadSpecifiersFromPlistName:@"About" target:self];
-        if (cached) {
-            objc_setAssociatedObject(self, &M3GAboutCacheKey,
-                                     cached, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        }
-    }
-    self.title = @"Info About Me";
-    return cached ?: [NSArray array];
 }
 
 @end
