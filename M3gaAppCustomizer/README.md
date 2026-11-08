@@ -2,11 +2,13 @@
 
 A classic iOS app-name and app-image customization tweak for jailbroken iOS 6 devices.
 
-- **Names** dynamically lists applications registered with iOS Launch Services. Each row has a text field for a replacement Home Screen label. Clearing the field restores the default name.
-- **Image Changing** dynamically lists the same installed apps. Tap one to open the Photos library and choose a replacement icon image. The chosen picture is center-cropped and stored outside the original app bundle.
+- **Names** lists installed applications found in the iOS 6 app bundle locations. Each row has a text field for a replacement Home Screen label. Clearing the field restores the default name.
+- **Image Changing** lists the same installed apps. Tap one to open the Photos library and choose a replacement icon image. The chosen picture is center-cropped and stored outside the original app bundle.
 - Includes Instructions, Info About Me, a Website button, and the creator credit.
 
-Preferences are stored in /var/mobile/Library/Preferences/com.m3ga.appcustomizer.plist.
-Custom PNG files are stored in /var/mobile/Library/M3gaAppCustomizer/Icons.
+The Settings bundle scans built-in app bundles in `/Applications` and downloaded app bundles in `/var/mobile/Applications/<UUID>/`. It reads each app's Info.plist for its bundle identifier and display name.
+
+Preferences are stored in `/var/mobile/Library/Preferences/com.m3ga.appcustomizer.plist`.
+Custom PNG files are stored in `/var/mobile/Library/M3gaAppCustomizer/Icons/<bundle-id>.png`.
 
 This is an initial test build. The package must be tested on an actual iOS 6 device before runtime behavior is considered verified. The build workflow does not publish to the main Cydia repository.
