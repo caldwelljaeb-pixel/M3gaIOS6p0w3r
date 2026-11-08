@@ -44,6 +44,8 @@
             <string>M3gaGravityPrefs</string>
             <key>detail</key>
             <string>M3GInstructionsController</string>
+            <key>isController</key>
+            <true/>
         </dict>
         <dict>
             <key>cell</key>
@@ -54,6 +56,8 @@
             <string>M3gaGravityPrefs</string>
             <key>detail</key>
             <string>M3GAboutController</string>
+            <key>isController</key>
+            <true/>
         </dict>
         <dict>
             <key>cell</key>

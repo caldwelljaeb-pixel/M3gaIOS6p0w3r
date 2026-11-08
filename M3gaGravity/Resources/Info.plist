@@ -7,20 +7,20 @@
     <key>CFBundleExecutable</key>
     <string>M3gaGravityPrefs</string>
     <key>CFBundleIdentifier</key>
-    <string>com.m3ga.m3gagravityprefs</string>
+    <string>com.m3ga.m3gagravity.preferences</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>
     <string>BNDL</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.2.2</string>
+    <string>0.2.11</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>0.2.2</string>
+    <string>0.2.11</string>
     <key>MinimumOSVersion</key>
     <string>6.0</string>
     <key>NSPrincipalClass</key>
-    <string>M3GRootListController</string>
+    <string>M3GInstructionsController</string>
 </dict>
 </plist>
