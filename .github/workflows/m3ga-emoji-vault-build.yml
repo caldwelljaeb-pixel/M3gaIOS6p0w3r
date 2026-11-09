@@ -93,7 +93,8 @@ jobs:
           APP="/tmp/m3ga-emoji-check/Applications/M3gaEmojiVault.app"
           test -f "$APP/M3gaEmojiVault"
           test -f "$APP/Info.plist"
-          test -f "$APP/Emoji.tsv"
+          EMOJI_FILE="$(find "$APP" -name Emoji.tsv -print -quit)"
+          test -n "$EMOJI_FILE"
           python3 - <<'PY'
           import plistlib
           from pathlib import Path
@@ -102,7 +103,9 @@ jobs:
               info = plistlib.load(stream)
           assert info["CFBundleIdentifier"] == "com.m3ga.emojivault"
           assert info["MinimumOSVersion"] == "6.0"
-          rows = [line for line in (app / "Emoji.tsv").read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
+          emoji_file = next(app.rglob("Emoji.tsv"), None)
+          assert emoji_file is not None, "Emoji.tsv missing from app bundle"
+          rows = [line for line in emoji_file.read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
           assert len(rows) >= 700, f"Expected the classic emoji catalogue, got {len(rows)} rows"
           assert all(len(line.split("\t")) >= 3 for line in rows), "Malformed emoji catalogue row"
           print(f"Verified app bundle and {len(rows)} emoji records.")
