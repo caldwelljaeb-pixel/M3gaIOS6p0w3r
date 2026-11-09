@@ -240,7 +240,11 @@ jobs:
           grep -q '^Author: M3gaIOS6p0w3r$' Packages
           grep -q '^Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb$' Packages
           grep -q '^Package: com.m3ga.appcustomizer$' Packages
-          grep -q '^Version: 0.1.7
+          grep -q '^Version: 0.1.7$' Packages
+          grep -q '^Filename: ./debs/com.m3ga.appcustomizer_0.1.7_iphoneos-arm.deb$' Packages
+          grep -q '^Package: com.m3ga.emojivault$' Packages
+          grep -q '^Version: 0.1.2$' Packages
+          grep -q '^Filename: ./debs/com.m3ga.emojivault_0.1.2_iphoneos-arm.deb$' Packages
       - name: Rebuild Release checksums and remove duplicate files
         shell: bash
         run: |
