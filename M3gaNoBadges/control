@@ -1,6 +1,6 @@
 Package: com.m3ga.nobadges
 Name: M3gaNoBadges
-Version: 0.1.0
+Version: 0.1.1
 Architecture: iphoneos-arm
 Description: Hide red notification badges on Home Screen app icons with one simple switch. Badge data and notifications are not deleted; turning the tweak off restores the badges.
 Maintainer: M3gaIOS6p0w3r
