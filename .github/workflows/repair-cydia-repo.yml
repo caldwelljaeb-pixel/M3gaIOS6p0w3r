@@ -199,7 +199,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- "debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb" "debs/com.m3ga.appcustomizer_0.1.7_iphoneos-arm.deb" Packages Packages.gz Release 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+          git add -A -- debs Packages Packages.gz Release
           if git diff --cached --quiet; then
             echo "Repository metadata is already up to date."
             exit 0
