@@ -1,0 +1,119 @@
+name: M3gaEmojiVault iOS 6 ARMv7 Build
+
+on:
+  push:
+    branches:
+      - m3ga-emoji-vault-0.1.0
+    paths:
+      - "M3gaEmojiVault/**"
+      - ".github/workflows/m3ga-emoji-vault-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out M3gaEmojiVault
+        uses: actions/checkout@v4
+
+      - name: Set up Theos
+        uses: Randomblock1/theos-action@v1
+        with:
+          theos-dir: ${{ github.workspace }}/theos
+          theos-src: https://github.com/theos/theos
+          theos-sdks: https://github.com/theos/sdks
+          theos-sdks-branch: master
+
+      - name: Patch iOS 9.3 SDK stubs for ARMv7 Linux linking
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          sdk = Path(os.environ["THEOS"]) / "sdks" / "iPhoneOS9.3.sdk"
+          if not sdk.is_dir():
+              raise SystemExit(f"Expected SDK not found: {sdk}")
+
+          changed = 0
+          for stub in sdk.rglob("*.tbd"):
+              original = stub.read_text(encoding="utf-8", errors="replace")
+              lines = original.splitlines(keepends=True)
+              output = []
+              for line in lines:
+                  if line.startswith("archs:") and "[" in line and "]" in line:
+                      before, rest = line.split("[", 1)
+                      values, after = rest.split("]", 1)
+                      arches = [item.strip() for item in values.split(",") if item.strip()]
+                      filtered = [item for item in arches if item not in {"i386", "x86_64"}]
+                      if filtered != arches:
+                          changed += 1
+                          line = before + "[" + ", ".join(filtered) + "]" + after
+                  output.append(line)
+              updated = "".join(output)
+              if updated != original:
+                  stub.write_text(updated, encoding="utf-8")
+
+          if changed == 0:
+              raise SystemExit("No simulator architecture entries found; refusing an unpatched SDK build.")
+
+          removed = 0
+          for stub in sdk.rglob("*.tbd"):
+              original = stub.read_text(encoding="utf-8", errors="replace")
+              updated = original.replace(", /usr/lib/system/liblaunch.dylib", "")
+              removed += original.count("/usr/lib/system/liblaunch.dylib") - updated.count("/usr/lib/system/liblaunch.dylib")
+              if updated != original:
+                  stub.write_text(updated, encoding="utf-8")
+
+          if removed == 0:
+              raise SystemExit("Expected liblaunch re-export was not found; refusing an unpatched SDK build.")
+
+          print(f"Patched SDK stubs: {changed} architecture entries, {removed} liblaunch references.")
+          PY
+
+      - name: Build ARMv7 Debian application package
+        working-directory: M3gaEmojiVault
+        run: |
+          make clean
+          make package FINALPACKAGE=1
+
+      - name: Verify Debian package and app bundle
+        run: |
+          set -euo pipefail
+          DEB="$(find M3gaEmojiVault/packages -name '*.deb' -print -quit)"
+          test -n "$DEB"
+          test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.emojivault"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.0"
+          test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
+          dpkg-deb -f "$DEB" Description | grep -F "made with ❤️ by M3gaIOS6p0w3r"
+          mkdir -p /tmp/m3ga-emoji-check
+          dpkg-deb -x "$DEB" /tmp/m3ga-emoji-check
+          APP="/tmp/m3ga-emoji-check/Applications/M3gaEmojiVault.app"
+          test -f "$APP/M3gaEmojiVault"
+          test -f "$APP/Info.plist"
+          test -f "$APP/Emoji.tsv"
+          python3 - <<'PY'
+          import plistlib
+          from pathlib import Path
+          app = Path("/tmp/m3ga-emoji-check/Applications/M3gaEmojiVault.app")
+          with (app / "Info.plist").open("rb") as stream:
+              info = plistlib.load(stream)
+          assert info["CFBundleIdentifier"] == "com.m3ga.emojivault"
+          assert info["MinimumOSVersion"] == "6.0"
+          rows = [line for line in (app / "Emoji.tsv").read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
+          assert len(rows) >= 700, f"Expected the classic emoji catalogue, got {len(rows)} rows"
+          assert all(len(line.split("\t")) >= 3 for line in rows), "Malformed emoji catalogue row"
+          print(f"Verified app bundle and {len(rows)} emoji records.")
+          PY
+          dpkg-deb --info "$DEB"
+          dpkg-deb -c "$DEB"
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: M3gaEmojiVault-0.1.0-deb
+          path: M3gaEmojiVault/packages/*.deb
+          if-no-files-found: error
+          retention-days: 14
