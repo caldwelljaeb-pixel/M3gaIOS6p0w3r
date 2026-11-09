@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PreferenceSpecifiers</key>
+    <array>
+        <dict>
+            <key>Type</key>
+            <string>PSGroupSpecifier</string>
+            <key>Title</key>
+            <string>Display</string>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSSwitchSpecifier</string>
+            <key>Title</key>
+            <string>Show Emoji Names</string>
+            <key>Key</key>
+            <string>ShowEmojiNames</string>
+            <key>DefaultValue</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSSwitchSpecifier</string>
+            <key>Title</key>
+            <string>Show Creator Credit</string>
+            <key>Key</key>
+            <string>ShowCreatorCredit</string>
+            <key>DefaultValue</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSGroupSpecifier</string>
+            <key>Title</key>
+            <string>About M3gaEmojiVault</string>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSTitleValueSpecifier</string>
+            <key>Title</key>
+            <string>Version</string>
+            <key>DefaultValue</key>
+            <string>0.1.0</string>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSTitleValueSpecifier</string>
+            <key>Title</key>
+            <string>Creator</string>
+            <key>DefaultValue</key>
+            <string>M3gaIOS6p0w3r</string>
+        </dict>
+        <dict>
+            <key>Type</key>
+            <string>PSGroupSpecifier</string>
+            <key>FooterText</key>
+            <string>made with ❤️ by M3gaIOS6p0w3r</string>
+        </dict>
+    </array>
+    <key>StringsTable</key>
+    <string>Root</string>
+</dict>
+</plist>
