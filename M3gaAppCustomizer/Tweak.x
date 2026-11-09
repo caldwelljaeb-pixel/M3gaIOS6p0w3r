@@ -38,13 +38,16 @@ static void M3GARefreshViewTree(UIView *view) {
         if ([view respondsToSelector:iconSelector])
             icon = ((id (*)(id, SEL))objc_msgSend)(view, iconSelector);
         if (icon) {
-            SEL purgeSelector = @selector(reloadIconImagePurgingImageCache:);
+            SEL purgeSelector = @selector(purgeCachedImages);
             if ([icon respondsToSelector:purgeSelector])
-                ((void (*)(id, SEL, BOOL))objc_msgSend)(icon, purgeSelector, YES);
+                ((void (*)(id, SEL))objc_msgSend)(icon, purgeSelector);
+            SEL reloadSelector = @selector(reloadIconImage);
+            if ([icon respondsToSelector:reloadSelector])
+                ((void (*)(id, SEL))objc_msgSend)(icon, reloadSelector);
             else {
-                SEL reloadSelector = @selector(reloadIconImage);
-                if ([icon respondsToSelector:reloadSelector])
-                    ((void (*)(id, SEL))objc_msgSend)(icon, reloadSelector);
+                SEL combinedReloadSelector = @selector(reloadIconImagePurgingImageCache:);
+                if ([icon respondsToSelector:combinedReloadSelector])
+                    ((void (*)(id, SEL, BOOL))objc_msgSend)(icon, combinedReloadSelector, YES);
             }
         }
         SEL updateLabelSelector = @selector(updateLabel);
@@ -67,7 +70,31 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
     M3GARefreshHomeScreen();
 }
 
-// SBApplicationIcon overrides both displayName and generateIconImage: on iOS 6.
+static UIImage *M3GACustomIconImageForIcon(id icon) {
+    NSString *bundleIdentifier = M3GABundleIdentifier(icon);
+    NSString *path = M3GASafeIconPath(bundleIdentifier);
+    UIImage *storedImage = path ? [UIImage imageWithContentsOfFile:path] : nil;
+    if (!storedImage.CGImage) return nil;
+
+    size_t pixelWidth = CGImageGetWidth(storedImage.CGImage);
+    size_t pixelHeight = CGImageGetHeight(storedImage.CGImage);
+    CGFloat imageScale = (pixelWidth >= 100 && pixelHeight >= 100) ? 2.0 : 1.0;
+    return [UIImage imageWithCGImage:storedImage.CGImage
+                               scale:imageScale
+                         orientation:UIImageOrientationUp];
+}
+
+// iOS 6.1's SBIcon owns the cached getIconImage: path. Override it as well
+// as SBApplicationIcon's generator so a previously cached stock image cannot win.
+%hook SBIcon
+- (id)getIconImage:(int)format {
+    UIImage *customImage = M3GACustomIconImageForIcon(self);
+    if (customImage) return customImage;
+    return %orig;
+}
+%end
+
+// SBApplicationIcon owns app labels and the original image generator on iOS 6.
 %hook SBApplicationIcon
 - (id)displayName {
     NSString *bundleIdentifier = M3GABundleIdentifier(self);
@@ -77,18 +104,7 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
     return %orig;
 }
 - (id)generateIconImage:(int)format {
-    NSString *bundleIdentifier = M3GABundleIdentifier(self);
-    NSString *path = M3GASafeIconPath(bundleIdentifier);
-    UIImage *storedImage = path ? [UIImage imageWithContentsOfFile:path] : nil;
-    UIImage *customImage = nil;
-    if (storedImage.CGImage) {
-        size_t pixelWidth = CGImageGetWidth(storedImage.CGImage);
-        size_t pixelHeight = CGImageGetHeight(storedImage.CGImage);
-        CGFloat imageScale = (pixelWidth >= 100 && pixelHeight >= 100) ? 2.0 : 1.0;
-        customImage = [UIImage imageWithCGImage:storedImage.CGImage
-                                          scale:imageScale
-                                    orientation:UIImageOrientationUp];
-    }
+    UIImage *customImage = M3GACustomIconImageForIcon(self);
     if (customImage) return customImage;
     return %orig;
 }
