@@ -1,6 +1,12 @@
 name: M3gaEmojiVault iOS 6 ARMv7 Build
 
 on:
+  push:
+    branches:
+      - m3ga-emoji-vault-0.1.0
+    paths:
+      - "M3gaEmojiVault/**"
+      - ".github/workflows/m3ga-emoji-vault-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -79,7 +85,7 @@ jobs:
           DEB="$(find M3gaEmojiVault/packages -name '*.deb' -print -quit)"
           test -n "$DEB"
           test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.emojivault"
-          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.0"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.1"
           test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
           dpkg-deb -f "$DEB" Description | grep -F "made with ❤️ by M3gaIOS6p0w3r"
           mkdir -p /tmp/m3ga-emoji-check
@@ -90,6 +96,8 @@ jobs:
           find /tmp/m3ga-emoji-check -maxdepth 5 -type f -print
           test -f "$APP/M3gaEmojiVault"
           test -f "$APP/Info.plist"
+          PREFS="/tmp/m3ga-emoji-check/Library/PreferenceLoader/Preferences/M3gaEmojiVault.plist"
+          test -f "$PREFS"
           EMOJI_FILE="$(find "$APP" -name Emoji.tsv -print -quit)"
           test -n "$EMOJI_FILE"
           python3 - <<'PY'
@@ -102,12 +110,21 @@ jobs:
               info = plistlib.load(stream)
           assert info["CFBundleIdentifier"] == "com.m3ga.emojivault"
           assert info["MinimumOSVersion"] == "6.0"
+          assert info["CFBundleShortVersionString"] == "0.1.1"
+          prefs = root / "Library/PreferenceLoader/Preferences/M3gaEmojiVault.plist"
+          with prefs.open("rb") as stream:
+              pane = plistlib.load(stream)
+          assert pane["entry"]["cell"] == "PSLinkCell"
+          assert pane["entry"]["label"] == "M3gaEmojiVault"
+          switches = [item for item in pane["items"] if item.get("cell") == "PSSwitchCell"]
+          assert {item["key"] for item in switches} == {"ShowEmojiNames", "ShowCreatorCredit"}
+          assert all(item["defaults"] == "com.m3ga.emojivault" for item in switches)
           emoji_file = next(app.rglob("Emoji.tsv"), None)
           assert emoji_file is not None, "Emoji.tsv missing from app bundle"
           rows = [line for line in emoji_file.read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
           assert len(rows) >= 700, f"Expected the classic emoji catalogue, got {len(rows)} rows"
           assert all(len(line.split("\t")) >= 3 for line in rows), "Malformed emoji catalogue row"
-          print(f"Verified app bundle and {len(rows)} emoji records.")
+          print(f"Verified app bundle, PreferenceLoader pane, and {len(rows)} emoji records.")
           PY
           dpkg-deb --info "$DEB"
           dpkg-deb -c "$DEB"
@@ -115,7 +132,7 @@ jobs:
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
-          name: M3gaEmojiVault-0.1.0-deb
+          name: M3gaEmojiVault-0.1.1-deb
           path: M3gaEmojiVault/packages/*.deb
           if-no-files-found: error
           retention-days: 14
