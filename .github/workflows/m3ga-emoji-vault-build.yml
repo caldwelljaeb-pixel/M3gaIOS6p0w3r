@@ -1,12 +1,6 @@
 name: M3gaEmojiVault iOS 6 ARMv7 Build
 
 on:
-  push:
-    branches:
-      - m3ga-emoji-vault-0.1.0
-    paths:
-      - "M3gaEmojiVault/**"
-      - ".github/workflows/m3ga-emoji-vault-build.yml"
   workflow_dispatch:
 
 permissions:
