@@ -149,6 +149,42 @@ jobs:
           echo "Verified tested M3gaNoBadges 0.1.1 artifact."
           dpkg-deb --info "$DEB"
 
+      - name: Publish tested M3gaEmojiVault 0.1.2
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          WORK="$(mktemp -d)"
+          trap 'rm -rf "$WORK"' EXIT
+          ARTIFACT_ID="13644618657"
+          curl -fsSL -L \\
+            -H "Accept: application/vnd.github+json" \\
+            -H "Authorization: Bearer $GITHUB_TOKEN" \\
+            -H "X-GitHub-Api-Version: 2022-11-28" \\
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \\
+            -o "$WORK/M3gaEmojiVault-0.1.2.zip"
+          mkdir -p debs
+          python3 - "$WORK/M3gaEmojiVault-0.1.2.zip" debs <<'PY'
+          import pathlib, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              candidates = [name for name in archive.namelist() if name.endswith(".deb")]
+              if len(candidates) != 1:
+                  raise SystemExit(f"Expected one EmojiVault Debian package, found {len(candidates)}")
+              destination = pathlib.Path(sys.argv[2]) / "com.m3ga.emojivault_0.1.2_iphoneos-arm.deb"
+              destination.write_bytes(archive.read(candidates[0]))
+              print(f"Extracted {candidates[0]} -> {destination}")
+          PY
+          DEB="debs/com.m3ga.emojivault_0.1.2_iphoneos-arm.deb"
+          test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.emojivault"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.2"
+          test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
+          test "$(dpkg-deb -f "$DEB" Maintainer)" = "M3gaIOS6p0w3r"
+          dpkg-deb -c "$DEB" | grep -F "M3gaEmojiVault.app/Icon.png"
+          dpkg-deb -c "$DEB" | grep -F "M3gaEmojiVault.app/Icon@2x.png"
+          echo "Verified tested M3gaEmojiVault 0.1.2 package."
+          dpkg-deb --info "$DEB"
+
       - name: Fix package author and maintainer fields
         shell: bash
         run: |
@@ -204,8 +240,306 @@ jobs:
           grep -q '^Author: M3gaIOS6p0w3r$' Packages
           grep -q '^Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb$' Packages
           grep -q '^Package: com.m3ga.appcustomizer$' Packages
-          grep -q '^Version: 0.1.7$' Packages
-          grep -q '^Filename: ./debs/com.m3ga.appcustomizer_0.1.7_iphoneos-arm.deb$' Packages
+          grep -q '^Version: 0.1.7
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- debs Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
+ Packages
+          grep -q '^Filename: ./debs/com.m3ga.appcustomizer_0.1.7_iphoneos-arm.deb
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- debs Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
+ Packages
+          grep -q '^Package: com.m3ga.emojivault
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- debs Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
+ Packages
+          grep -q '^Version: 0.1.2
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- debs Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
+ Packages
+          grep -q '^Filename: ./debs/com.m3ga.emojivault_0.1.2_iphoneos-arm.deb
+      - name: Rebuild Release checksums and remove duplicate files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            cat <<'EOF'
+          Origin: M3gaIOS6p0w3r
+          Label: M3gaIOS6p0w3r
+          Suite: stable
+          Codename: stable
+          Architectures: iphoneos-arm
+          Components: main
+          Description: Classic iOS jailbreak tweaks, themes, and utilities.
+
+          MD5Sum:
+          EOF
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(md5sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+            printf '\nSHA256:\n'
+            for FILE in Packages Packages.gz; do
+              printf ' %s %8s %s\n' "$(sha256sum "$FILE" | cut -d' ' -f1)" "$(stat -c '%s' "$FILE")" "$FILE"
+            done
+          } > Release
+
+          rm -f 'Packages (3)' 'Packages (3).gz' 'Release (3)'
+
+      - name: Verify repository files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Package index ==='
+          cat Packages
+          echo '=== Release metadata ==='
+          cat Release
+          echo '=== Remaining top-level index files ==='
+          find . -maxdepth 1 -type f \( -name 'Packages*' -o -name 'Release*' \) -printf '%f\n' | sort
+          test -s Packages
+          test -s Packages.gz
+          test -s Release
+          test ! -e 'Packages (3)'
+          test ! -e 'Packages (3).gz'
+          test ! -e 'Release (3)'
+
+      - name: Commit corrected repository metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- debs Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Repository metadata is already up to date."
+            exit 0
+          fi
+          git commit -m "Fix Cydia package metadata and regenerate indexes"
+          git push
+ Packages
 
       - name: Rebuild Release checksums and remove duplicate files
         shell: bash
