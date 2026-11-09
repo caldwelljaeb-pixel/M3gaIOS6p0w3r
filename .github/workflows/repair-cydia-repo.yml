@@ -90,6 +90,65 @@ jobs:
           echo "Verified $DEB"
           dpkg-deb --info "$DEB"
 
+      - name: Download tested M3gaNoBadges 0.1.1 release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          WORK="$(mktemp -d)"
+          trap 'rm -rf "$WORK"' EXIT
+
+          curl -fsSL \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/42543980534/artifacts" \
+            -o "$WORK/artifacts.json"
+
+          ARTIFACT_ID="$(python3 - "$WORK/artifacts.json" <<'PY'
+          import json, sys
+          with open(sys.argv[1], encoding="utf-8") as stream:
+              payload = json.load(stream)
+          matches = [
+              item for item in payload.get("artifacts", [])
+              if item.get("name") == "M3gaNoBadges-0.1.1-deb"
+              and not item.get("expired", False)
+          ]
+          if len(matches) != 1:
+              raise SystemExit(f"Expected one active M3gaNoBadges 0.1.1 artifact, found {len(matches)}")
+          print(matches[0]["id"])
+          PY
+          )"
+
+          curl -fsSL -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \
+            -o "$WORK/M3gaNoBadges-0.1.1.zip"
+
+          mkdir -p debs
+          python3 - "$WORK/M3gaNoBadges-0.1.1.zip" debs <<'PY'
+          import pathlib, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              candidates = [name for name in archive.namelist() if name.endswith(".deb")]
+              if len(candidates) != 1:
+                  raise SystemExit(f"Expected one M3gaNoBadges Debian package, found {len(candidates)}")
+              destination = pathlib.Path(sys.argv[2]) / "com.m3ga.nobadges_0.1.1_iphoneos-arm.deb"
+              destination.write_bytes(archive.read(candidates[0]))
+              print(f"Extracted {candidates[0]} -> {destination}")
+          PY
+
+          DEB="debs/com.m3ga.nobadges_0.1.1_iphoneos-arm.deb"
+          test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.nobadges"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.1"
+          test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
+          dpkg-deb -f "$DEB" Description | grep -F "made with ❤️ by M3gaIOS6p0w3r"
+          echo "Verified tested M3gaNoBadges 0.1.1 artifact."
+          dpkg-deb --info "$DEB"
+
       - name: Fix package author and maintainer fields
         shell: bash
         run: |
