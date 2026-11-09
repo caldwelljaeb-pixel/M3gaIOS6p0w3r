@@ -107,7 +107,7 @@ jobs:
           DEB="$(find M3gaNoBadges/packages -name '*.deb' -print -quit)"
           test -n "$DEB"
           test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.nobadges"
-          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.0"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.1"
           test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
           dpkg-deb --info "$DEB"
           dpkg-deb -c "$DEB"
@@ -123,7 +123,7 @@ jobs:
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
-          name: M3gaNoBadges-0.1.0-deb
+          name: M3gaNoBadges-0.1.1-deb
           path: M3gaNoBadges/packages/*.deb
           if-no-files-found: error
           retention-days: 14
