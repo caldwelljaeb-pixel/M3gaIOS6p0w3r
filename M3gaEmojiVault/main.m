@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface M3gaEmojiBrowserController : UIViewController <UISearchBarDelegate, UIActionSheetDelegate> {
     UISearchBar *_searchBar;
@@ -124,7 +125,8 @@
 
 - (void)rebuildGrid {
     if (!_emojiScrollView || !_visibleEmojis) return;
-    for (UIView *subview in [_emojiScrollView.subviews copy]) {
+    NSArray *oldSubviews = [[_emojiScrollView.subviews copy] autorelease];
+    for (UIView *subview in oldSubviews) {
         [subview removeFromSuperview];
     }
 
