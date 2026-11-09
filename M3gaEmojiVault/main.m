@@ -170,7 +170,7 @@
         nameLabel.backgroundColor = [UIColor clearColor];
         nameLabel.adjustsFontSizeToFitWidth = YES;
         nameLabel.minimumFontSize = 6.0;
-        nameLabel.lineBreakMode = UILineBreakModeTailTruncation;
+        nameLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
         [cell addSubview:emojiButton];
         [cell addSubview:nameLabel];
