@@ -27,6 +27,34 @@ jobs:
           theos-sdks: https://github.com/theos/sdks
           theos-sdks-branch: master
 
+      - name: Patch Preferences headers for the legacy SDK
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          headers = Path(os.environ["THEOS"]) / "vendor" / "include" / "Preferences"
+          if not headers.is_dir():
+              raise SystemExit(f"Preferences headers not found: {headers}")
+
+          annotation = re.compile(r"\s+API_AVAILABLE\(ios\([^)]+\)\)")
+          replacements = 0
+          for header in headers.rglob("*.h"):
+              original = header.read_text(encoding="utf-8", errors="replace")
+              updated, count = annotation.subn("", original)
+              if count:
+                  header.write_text(updated, encoding="utf-8")
+                  replacements += count
+
+          if replacements < 3:
+              raise SystemExit(
+                  f"Expected at least 3 legacy-incompatible API_AVAILABLE annotations; "
+                  f"patched {replacements}. Refusing to continue."
+              )
+          print(f"Removed {replacements} API availability annotations from build-only Preferences headers.")
+          PY
+
       - name: Patch iOS 9.3 SDK stubs for ARMv7 Linux linking
         run: |
           python3 - <<'PY'
