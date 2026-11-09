@@ -13,7 +13,7 @@ if not deb.is_file():
 control = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Package"], text=True).strip()
 version = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Version"], text=True).strip()
 arch = subprocess.check_output(["dpkg-deb", "-f", str(deb), "Architecture"], text=True).strip()
-assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.6", "iphoneos-arm")
+assert (control, version, arch) == ("com.m3ga.appcustomizer", "0.1.7", "iphoneos-arm")
 
 with tempfile.TemporaryDirectory() as temp:
     root = Path(temp)
@@ -57,8 +57,11 @@ with tempfile.TemporaryDirectory() as temp:
     prefs_binary = bundle / "M3gaAppCustomizerPrefs"
     assert prefs_binary.exists()
     tweak_source = Path("M3gaAppCustomizer/Tweak.x").read_text(encoding="utf-8")
-    assert "%hook SBApplicationIcon" in tweak_source, "App label and icon hooks must target SBApplicationIcon"
-    assert "M3gaAppCustomizer 0.1.6" in root_text, "Settings footer must show package version 0.1.6"
+    assert "%hook SBApplicationIcon" in tweak_source, "App label and image-generation hooks must target SBApplicationIcon"
+    assert "%hook SBIcon" in tweak_source and "- (id)getIconImage:(int)format" in tweak_source, "iOS 6.1 cached SBIcon image retrieval must also be overridden"
+    assert "M3GACustomIconImageForIcon(self)" in tweak_source, "Both icon-rendering paths must use the shared custom image loader"
+    assert "@selector(purgeCachedImages)" in tweak_source, "Icon changes must purge the iOS 6.1 SBIcon image cache"
+    assert "M3gaAppCustomizer 0.1.7" in root_text, "Settings footer must show package version 0.1.7"
     assert "M3GAAppCustomizerNamesController" in root_text, "Names controller must be namespaced"
     assert "M3GAAppCustomizerImagesController" in root_text, "Image controller must be namespaced"
 
