@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>title</key><string>M3gaNoBadges</string>
+<key>items</key><array>
+<dict>
+<key>cell</key><string>PSGroupCell</string>
+<key>label</key><string>Notification Badges</string>
+<key>footerText</key><string>Hide the red numbered bubbles on app icons. This does not clear notifications or change their badge counts.</string>
+</dict>
+<dict>
+<key>cell</key><string>PSSwitchCell</string>
+<key>label</key><string>Hide Badges</string>
+<key>default</key><true/>
+<key>defaults</key><string>com.m3ga.nobadges</string>
+<key>key</key><string>Enabled</string>
+<key>PostNotification</key><string>com.m3ga.nobadges/preferences.changed</string>
+</dict>
+<dict>
+<key>cell</key><string>PSGroupCell</string>
+<key>footerText</key><string>M3gaNoBadges 0.1.0 · Made by M3gaIOS6p0w3r</string>
+</dict>
+</array></dict></plist>
