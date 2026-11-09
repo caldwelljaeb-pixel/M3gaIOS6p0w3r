@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>entry</key>
+    <dict>
+        <key>cell</key>
+        <string>PSLinkCell</string>
+        <key>label</key>
+        <string>M3gaEmojiVault</string>
+    </dict>
+    <key>title</key>
+    <string>M3gaEmojiVault</string>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Display</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>defaults</key>
+            <string>com.m3ga.emojivault</string>
+            <key>key</key>
+            <string>ShowEmojiNames</string>
+            <key>default</key>
+            <true/>
+            <key>label</key>
+            <string>Show Emoji Names</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>defaults</key>
+            <string>com.m3ga.emojivault</string>
+            <key>key</key>
+            <string>ShowCreatorCredit</string>
+            <key>default</key>
+            <true/>
+            <key>label</key>
+            <string>Show Creator Credit</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>About M3gaEmojiVault</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSTitleValueCell</string>
+            <key>label</key>
+            <string>Version</string>
+            <key>value</key>
+            <string>0.1.1</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSTitleValueCell</string>
+            <key>label</key>
+            <string>Creator</string>
+            <key>value</key>
+            <string>M3gaIOS6p0w3r</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>made with ❤️ by M3gaIOS6p0w3r</string>
+        </dict>
+    </array>
+</dict>
+</plist>
