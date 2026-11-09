@@ -60,7 +60,7 @@ jobs:
               "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" \
               -o "$work/package.zip"
             local inner
-            inner="$(unzip -Z1 "$work/package.zip" | grep -E '\\.deb$')"
+            inner="$(unzip -Z1 "$work/package.zip" | grep -E '\.deb$')"
             test -n "$inner"
             test "$(printf '%s\n' "$inner" | wc -l)" -eq 1
             unzip -p "$work/package.zip" "$inner" > "debs/$output_name"
