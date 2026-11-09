@@ -22,6 +22,10 @@
 @synthesize window = _window;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                              [NSNumber numberWithBool:YES], @"ShowEmojiNames",
+                              [NSNumber numberWithBool:YES], @"ShowCreatorCredit", nil];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     M3gaEmojiBrowserController *browser = [[[M3gaEmojiBrowserController alloc] init] autorelease];
     UINavigationController *navigation = [[[UINavigationController alloc] initWithRootViewController:browser] autorelease];
@@ -75,6 +79,13 @@
 
     [self loadEmojiList];
     [self filterEmojisWithText:@""];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    _creditLabel.hidden = ![prefs boolForKey:@"ShowCreatorCredit"];
+    [self rebuildGrid];
 }
 
 - (void)viewWillLayoutSubviews {
@@ -164,6 +175,7 @@
 
         UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(2.0, 43.0, cellWidth - 10.0, 18.0)];
         nameLabel.text = [item objectForKey:@"name"];
+        nameLabel.hidden = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ShowEmojiNames"];
         nameLabel.textAlignment = NSTextAlignmentCenter;
         nameLabel.font = [UIFont systemFontOfSize:8.0];
         nameLabel.textColor = [UIColor darkGrayColor];
