@@ -1,9 +1,7 @@
-{
-    entry = {
-        bundle = M3gaNoBadgesPrefs;
-        cell = PSLinkCell;
-        detail = M3gaNoBadgesListController;
-        name = M3gaNoBadges;
-        isController = 1;
-    };
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>entry</key><dict>
+<key>cell</key><string>PSLinkCell</string><key>label</key><string>M3gaNoBadges</string>
+<key>bundle</key><string>M3gaNoBadgesPrefs</string><key>detail</key><string>M3gaNoBadgesListController</string>
+<key>isController</key><true/><key>overridePrincipalClass</key><true/>
+</dict></dict></plist>
