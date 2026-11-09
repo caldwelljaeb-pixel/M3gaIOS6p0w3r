@@ -325,7 +325,13 @@ static NSMutableDictionary *M3GAMutablePreferences(void) {
         BOOL wroteFile = directoryReady && png &&
             [png writeToFile:path options:NSDataWritingAtomic error:&fileError] &&
             [manager fileExistsAtPath:path];
+        UIImage *savedImage = wroteFile ? [UIImage imageWithContentsOfFile:path] : nil;
+        wroteFile = wroteFile && savedImage.CGImage != NULL;
         if (wroteFile) {
+            NSLog(@"M3gaAppCustomizer: saved custom icon for %@ at %@ (%lu x %lu pixels)",
+                  _selectedBundleIdentifier, path,
+                  (unsigned long)CGImageGetWidth(savedImage.CGImage),
+                  (unsigned long)CGImageGetHeight(savedImage.CGImage));
             M3GAPostChanged();
         } else {
             NSString *message = fileError.localizedDescription;
