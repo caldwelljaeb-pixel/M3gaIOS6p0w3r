@@ -1,0 +1,9 @@
+{
+    entry = {
+        bundle = M3gaNoBadgesPrefs;
+        cell = PSLinkCell;
+        detail = M3gaNoBadgesListController;
+        name = M3gaNoBadges;
+        isController = 1;
+    };
+}
