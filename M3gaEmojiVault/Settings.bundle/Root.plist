@@ -42,7 +42,7 @@
             <key>Title</key>
             <string>Version</string>
             <key>DefaultValue</key>
-            <string>0.1.0</string>
+            <string>0.1.1</string>
         </dict>
         <dict>
             <key>Type</key>
