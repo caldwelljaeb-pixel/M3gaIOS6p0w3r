@@ -4,15 +4,35 @@ Architecture: iphoneos-arm
 Maintainer: M3gaIOS6p0w3r
 Depends: winterboard, firmware (>= 6.0)
 Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb
-Size: 20020
-MD5sum: dacdb227017a032476a30f0fbf9d82cb
-SHA1: c01d2032172c7874315b23b8f2ad7fa235ff2bc6
-SHA256: 348722f520d0f40f1ee4f5145e970dda4f50898f199036a766983d0bf32cabac
+Size: 20016
+MD5sum: 66b887c14a89d037aed738be88112bc3
+SHA1: 51a9928b4e7afccfe15da69753cd16b3d61ba0d8
+SHA256: fbb41198ae916777ea9d879f3e1e740f64e262dea6cc3a46c81cb8f302f7bcf7
 Section: Themes (LockScreen)
 Priority: optional
 Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel rainbow finish and custom “slide to ebay” wording. Animated shimmer companion is planned separately.
 Author: M3gaIOS6p0w3r
 Name: eBay Slider - Pale Lemon Rainbow Shimmer
+
+Package: com.m3ga.appcustomizer
+Version: 0.1.7
+Architecture: iphoneos-arm
+Maintainer: M3gaIOS6p0w3r
+Installed-Size: 132
+Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
+Filename: ./debs/com.m3ga.appcustomizer_0.1.7_iphoneos-arm.deb
+Size: 15014
+MD5sum: 2952ea2dfe2978a4d4e6f75f2ee44e65
+SHA1: cc342d8637107c32f5cbe8357d6172613fcf99bc
+SHA256: da856e08be912314756a7226590af5fcd502a2be0955df0092978fd1e61a7462
+Section: Tweaks
+Description: Customize Home Screen app names and icons on classic iOS.
+ Detect installed apps, enter a replacement icon label in Names, or choose a
+ photo from your library in Image Changing. Changes are cosmetic and can be
+ cleared with the per-app Reset button, which restores both the original name and picture.
+ Photos are fitted inside the icon, validated after saving, and loaded through both the iOS 6.1 SBIcon cache getter and SBApplicationIcon image generator. Uses the native Preferences Reset button and uniquely named Settings controllers, per-app reset, Instructions, creator information, and a Website button.
+Author: M3gaIOS6p0w3r
+Name: M3gaAppCustomizer
 
 Package: com.m3ga.m3gagravity
 Version: 0.2.15
