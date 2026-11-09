@@ -73,6 +73,11 @@ jobs:
           print(f"Patched SDK stubs: {changed} architecture entries, {removed} liblaunch references.")
           PY
 
+      - name: Generate iOS 6 app icons
+        run: |
+          python3 -m pip install --user Pillow
+          python3 M3gaEmojiVault/make_icons.py
+
       - name: Build ARMv7 Debian application package
         working-directory: M3gaEmojiVault
         run: |
@@ -85,7 +90,7 @@ jobs:
           DEB="$(find M3gaEmojiVault/packages -name '*.deb' -print -quit)"
           test -n "$DEB"
           test "$(dpkg-deb -f "$DEB" Package)" = "com.m3ga.emojivault"
-          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.1"
+          test "$(dpkg-deb -f "$DEB" Version)" = "0.1.2"
           test "$(dpkg-deb -f "$DEB" Architecture)" = "iphoneos-arm"
           dpkg-deb -f "$DEB" Description | grep -F "made with ❤️ by M3gaIOS6p0w3r"
           mkdir -p /tmp/m3ga-emoji-check
@@ -96,6 +101,8 @@ jobs:
           find /tmp/m3ga-emoji-check -maxdepth 5 -type f -print
           test -f "$APP/M3gaEmojiVault"
           test -f "$APP/Info.plist"
+          test -f "$APP/Icon.png"
+          test -f "$APP/Icon@2x.png"
           PREFS="/tmp/m3ga-emoji-check/Library/PreferenceLoader/Preferences/M3gaEmojiVault.plist"
           test -f "$PREFS"
           EMOJI_FILE="$(find "$APP" -name Emoji.tsv -print -quit)"
@@ -110,7 +117,7 @@ jobs:
               info = plistlib.load(stream)
           assert info["CFBundleIdentifier"] == "com.m3ga.emojivault"
           assert info["MinimumOSVersion"] == "6.0"
-          assert info["CFBundleShortVersionString"] == "0.1.1"
+          assert info["CFBundleShortVersionString"] == "0.1.2"
           prefs = root / "Library/PreferenceLoader/Preferences/M3gaEmojiVault.plist"
           with prefs.open("rb") as stream:
               pane = plistlib.load(stream)
@@ -132,7 +139,7 @@ jobs:
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
-          name: M3gaEmojiVault-0.1.1-deb
+          name: M3gaEmojiVault-0.1.2-deb
           path: M3gaEmojiVault/packages/*.deb
           if-no-files-found: error
           retention-days: 14
