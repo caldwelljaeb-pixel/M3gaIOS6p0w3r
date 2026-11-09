@@ -1,12 +1,12 @@
 Package: com.m3ga.appcustomizer
 Name: M3gaAppCustomizer
-Version: 0.1.6
+Version: 0.1.7
 Architecture: iphoneos-arm
 Description: Customize Home Screen app names and icons on classic iOS.
  Detect installed apps, enter a replacement icon label in Names, or choose a
  photo from your library in Image Changing. Changes are cosmetic and can be
  cleared with the per-app Reset button, which restores both the original name and picture.
- Photos are fitted inside the icon, then loaded at the correct 2x Retina scale. Uses the native Preferences Reset button and uniquely named Settings controllers, per-app reset, Instructions, creator information, and a Website button.
+ Photos are fitted inside the icon, validated after saving, and loaded through both the iOS 6.1 SBIcon cache getter and SBApplicationIcon image generator. Uses the native Preferences Reset button and uniquely named Settings controllers, per-app reset, Instructions, creator information, and a Website button.
 Maintainer: M3gaIOS6p0w3r
 Author: M3gaIOS6p0w3r
 Section: Tweaks
