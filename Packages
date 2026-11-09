@@ -5,9 +5,9 @@ Maintainer: M3gaIOS6p0w3r
 Depends: winterboard, firmware (>= 6.0)
 Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb
 Size: 20020
-MD5sum: d9a0f80b13b081313ea67829e8233009
-SHA1: 24d15f508a4519dc324f8457bb80c77f7a2ed71d
-SHA256: dd8f1737c5c38c58569e4d0297d9206eab009bec710aaa7503e07cc60fd5baf5
+MD5sum: 7a4b241879f0351ee6e93ee293869352
+SHA1: 693ad0462e7d2a04a94c47f666be57f36e513620
+SHA256: 2d3825a948ec928ecda752ead2ff9d9224634bac5cd79c1517eca3e06c04fbba
 Section: Themes (LockScreen)
 Priority: optional
 Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel rainbow finish and custom “slide to ebay” wording. Animated shimmer companion is planned separately.
@@ -60,10 +60,10 @@ Maintainer: M3gaIOS6p0w3r
 Installed-Size: 120
 Depends: mobilesubstrate, preferenceloader, firmware (>= 6.0)
 Filename: ./debs/com.m3ga.nobadges_0.1.1_iphoneos-arm.deb
-Size: 4663
-MD5sum: 524d63a57ae8e928593f71e4d81aa305
-SHA1: 77ab716bc718b5d7907bd70cf321ea38a2fec0d2
-SHA256: 5907d88ab89bd0cea3c7ef4b05d827fc2b9c6daa15c45cc91a7e0f6e61d4d6ca
+Size: 4544
+MD5sum: ee1e31b9750ec31bbd452f8961ef2e14
+SHA1: 651d0b7ec9b708b836049a88a47f40fd249e98a3
+SHA256: 63e0dc8457055773f5d877d686fe58fe63b8e98e25fb83adfdddcc5997be3051
 Section: Tweaks
 Description: Hide red notification badges on Home Screen app icons with one simple switch. Badge data and notifications are not deleted; turning the tweak off restores the badges.
  made with ❤️ by M3gaIOS6p0w3r
