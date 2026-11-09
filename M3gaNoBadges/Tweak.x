@@ -17,9 +17,12 @@ static void M3GAPreferencesChanged(CFNotificationCenterRef center, void *observe
     M3GALoadPreferences();
 }
 
-%hook SBIcon
-- (id)badgeNumberOrString {
-    if (M3GAHideBadges) return nil;
+// On iOS 6, SBIconController is the SBIconView delegate that decides
+// whether an icon view should display its badge. Hook this decision
+// instead of SBIcon, which does not own this iOS 6 display callback.
+%hook SBIconController
+- (BOOL)iconViewDisplaysBadges:(id)iconView {
+    if (M3GAHideBadges) return NO;
     return %orig;
 }
 %end
