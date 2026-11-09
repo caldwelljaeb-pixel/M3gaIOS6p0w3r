@@ -5,9 +5,9 @@ Maintainer: M3gaIOS6p0w3r
 Depends: winterboard, firmware (>= 6.0)
 Filename: ./debs/com.caldwelljaeb.ebayslider.palelemon_1.0_iphoneos-arm.deb
 Size: 20020
-MD5sum: 7a4b241879f0351ee6e93ee293869352
-SHA1: 693ad0462e7d2a04a94c47f666be57f36e513620
-SHA256: 2d3825a948ec928ecda752ead2ff9d9224634bac5cd79c1517eca3e06c04fbba
+MD5sum: 348a81e55c224ca273949bdbb0a15f8f
+SHA1: 266a120ce4938cb0aa767a0de4ad7ccec5e8b02a
+SHA256: 701918943401531a30c8d7c443b2ff37abbf51790584a2f51b53fa96343e8566
 Section: Themes (LockScreen)
 Priority: optional
 Description: A glossy Pale Lemon iOS 6 lock-screen slider theme with a pastel rainbow finish and custom “slide to ebay” wording. Animated shimmer companion is planned separately.
@@ -33,6 +33,23 @@ Description: Customize Home Screen app names and icons on classic iOS.
  Photos are fitted inside the icon, validated after saving, and loaded through both the iOS 6.1 SBIcon cache getter and SBApplicationIcon image generator. Uses the native Preferences Reset button and uniquely named Settings controllers, per-app reset, Instructions, creator information, and a Website button.
 Author: M3gaIOS6p0w3r
 Name: M3gaAppCustomizer
+
+Package: com.m3ga.emojivault
+Version: 0.1.2
+Architecture: iphoneos-arm
+Maintainer: M3gaIOS6p0w3r
+Installed-Size: 136
+Depends: preferenceloader, firmware (>= 6.0)
+Filename: ./debs/com.m3ga.emojivault_0.1.2_iphoneos-arm.deb
+Size: 40710
+MD5sum: cf58575fd6f9c4281d25a034173b1c90
+SHA1: 1c47a80f08aa839b04c3180bb5962e6bf2fe6591
+SHA256: 31b24321b89d2c82ec0948a2674fdd54d1f8cc1f8e3937cbc8df40c5fa79de4d
+Section: Applications
+Description: Browse a classic iOS emoji collection, search by name or character, and copy emoji with a tap or long-press menu.
+ made with ❤️ by M3gaIOS6p0w3r
+Author: M3gaIOS6p0w3r
+Name: M3gaEmojiVault
 
 Package: com.m3ga.m3gagravity
 Version: 0.2.15
